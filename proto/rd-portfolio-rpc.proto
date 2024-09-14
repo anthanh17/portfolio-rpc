@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package rd_portfolio_rpc;
+option go_package="./rd-portfolio-rpc";
+
+message Request {
+  string ping = 1;
+}
+
+message Response {
+  string pong = 1;
+}
+
+message TickerInfo {
+  string name = 1;
+  string company_name = 2;
+  double allocation = 3;
+}
+
+message Portfolio {
+  repeated TickerInfo tickers = 1;
+  double expected_return = 2;
+  double standard_deviation = 3;
+  double sharpe_ratio = 4;
+}
+message Value {
+  repeated double values = 1;
+}
+
+message Row {
+  repeated string headers = 1;
+  repeated Value values = 2;
+}
+
+message Asset {
+  string asset = 1;
+  double min_weight = 2;
+  double max_weight = 3;
+  double expected_return = 4;
+  double standard_deviation = 5;
+  double sharpe_ratio = 6;
+}
+
+message GetPortfolioOptReq {
+  string po_id = 1;
+  string user_id = 2;
+}
+
+message CreatePortfolioOptReq {}
+
+message CreatePortfolioOptRes {}
+
+message GetPortfolioOptsReq {}
+
+message GetPortfolioOptsRes {}
+
+message GetPortfolioOptRes {
+  string portfolio_type = 1;
+  optional Portfolio provided_portfolio = 2;
+  optional Portfolio max_sharpe_ratio_portfolio = 3;
+  optional Row opt_portfolios = 4;
+  optional Row corr_matrix = 5;
+  optional Row cml = 6;
+  repeated Asset assets = 7;
+  optional Row portfolios = 8;
+  string user_id = 9;
+}
+
+service RdPortfolioRpc {
+  rpc Ping(Request) returns(Response);
+  // Portfolio optimization
+  rpc GetOpt(GetPortfolioOptReq) returns(GetPortfolioOptRes);
+  rpc CreateOpt(CreatePortfolioOptReq) returns(CreatePortfolioOptRes);
+  rpc GetOpts(GetPortfolioOptsReq) returns(GetPortfolioOptsRes);
+
+  rpc CreatePortfolioProfile (CreatePortfolioProfileRequest) returns (CreatePortfolioProfileResponse) {}
+}
+
+message PortfolioAsset {
+  int64 ticker_id = 1;
+  double allocation = 2;
+  double price = 3;
+}
+
+message CreatePortfolioProfileRequest {
+  string category_id = 1;
+  string name = 2;
+  repeated string organization_id = 3;
+  repeated string branch_id = 4;
+  repeated string advisor_id = 5;
+  repeated PortfolioAsset assets = 6;
+  string privacy = 7;
+}
+
+message CreatePortfolioProfileResponse {
+  bool status = 1;
+}

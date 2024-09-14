@@ -1,0 +1,10 @@
+database:
+  host: localhost
+  port: 5432
+  username: test
+  password: testpassword
+  database: testdatabase
+grpc:
+  address: 0.0.0.0:9090
+log:
+  level: info
