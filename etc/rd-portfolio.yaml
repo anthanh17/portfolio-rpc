@@ -5,6 +5,6 @@ database:
   password: secret
   database: hehe_business
 grpc:
-  address: 0.0.0.0:9090
+  address: 0.0.0.0:9000
 log:
   level: info

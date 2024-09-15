@@ -24,6 +24,8 @@ const (
 	RdPortfolioRpc_CreateOpt_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/CreateOpt"
 	RdPortfolioRpc_GetOpts_FullMethodName                = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpts"
 	RdPortfolioRpc_CreatePortfolioProfile_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/CreatePortfolioProfile"
+	RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/UpdatePortfolioProfile"
+	RdPortfolioRpc_DeletePortfolioProfile_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/DeletePortfolioProfile"
 )
 
 // RdPortfolioRpcClient is the client API for RdPortfolioRpc service.
@@ -36,6 +38,8 @@ type RdPortfolioRpcClient interface {
 	CreateOpt(ctx context.Context, in *CreatePortfolioOptReq, opts ...grpc.CallOption) (*CreatePortfolioOptRes, error)
 	GetOpts(ctx context.Context, in *GetPortfolioOptsReq, opts ...grpc.CallOption) (*GetPortfolioOptsRes, error)
 	CreatePortfolioProfile(ctx context.Context, in *CreatePortfolioProfileRequest, opts ...grpc.CallOption) (*CreatePortfolioProfileResponse, error)
+	UpdatePortfolioProfile(ctx context.Context, in *UpdatePortfolioProfileRequest, opts ...grpc.CallOption) (*UpdatePortfolioProfileResponse, error)
+	DeletePortfolioProfile(ctx context.Context, in *DeletePortfolioProfileRequest, opts ...grpc.CallOption) (*DeletePortfolioProfileResponse, error)
 }
 
 type rdPortfolioRpcClient struct {
@@ -96,6 +100,26 @@ func (c *rdPortfolioRpcClient) CreatePortfolioProfile(ctx context.Context, in *C
 	return out, nil
 }
 
+func (c *rdPortfolioRpcClient) UpdatePortfolioProfile(ctx context.Context, in *UpdatePortfolioProfileRequest, opts ...grpc.CallOption) (*UpdatePortfolioProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdatePortfolioProfileResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rdPortfolioRpcClient) DeletePortfolioProfile(ctx context.Context, in *DeletePortfolioProfileRequest, opts ...grpc.CallOption) (*DeletePortfolioProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePortfolioProfileResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_DeletePortfolioProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RdPortfolioRpcServer is the server API for RdPortfolioRpc service.
 // All implementations must embed UnimplementedRdPortfolioRpcServer
 // for forward compatibility.
@@ -106,6 +130,8 @@ type RdPortfolioRpcServer interface {
 	CreateOpt(context.Context, *CreatePortfolioOptReq) (*CreatePortfolioOptRes, error)
 	GetOpts(context.Context, *GetPortfolioOptsReq) (*GetPortfolioOptsRes, error)
 	CreatePortfolioProfile(context.Context, *CreatePortfolioProfileRequest) (*CreatePortfolioProfileResponse, error)
+	UpdatePortfolioProfile(context.Context, *UpdatePortfolioProfileRequest) (*UpdatePortfolioProfileResponse, error)
+	DeletePortfolioProfile(context.Context, *DeletePortfolioProfileRequest) (*DeletePortfolioProfileResponse, error)
 	mustEmbedUnimplementedRdPortfolioRpcServer()
 }
 
@@ -130,6 +156,12 @@ func (UnimplementedRdPortfolioRpcServer) GetOpts(context.Context, *GetPortfolioO
 }
 func (UnimplementedRdPortfolioRpcServer) CreatePortfolioProfile(context.Context, *CreatePortfolioProfileRequest) (*CreatePortfolioProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePortfolioProfile not implemented")
+}
+func (UnimplementedRdPortfolioRpcServer) UpdatePortfolioProfile(context.Context, *UpdatePortfolioProfileRequest) (*UpdatePortfolioProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePortfolioProfile not implemented")
+}
+func (UnimplementedRdPortfolioRpcServer) DeletePortfolioProfile(context.Context, *DeletePortfolioProfileRequest) (*DeletePortfolioProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePortfolioProfile not implemented")
 }
 func (UnimplementedRdPortfolioRpcServer) mustEmbedUnimplementedRdPortfolioRpcServer() {}
 func (UnimplementedRdPortfolioRpcServer) testEmbeddedByValue()                        {}
@@ -242,6 +274,42 @@ func _RdPortfolioRpc_CreatePortfolioProfile_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RdPortfolioRpc_UpdatePortfolioProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePortfolioProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RdPortfolioRpcServer).UpdatePortfolioProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RdPortfolioRpcServer).UpdatePortfolioProfile(ctx, req.(*UpdatePortfolioProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RdPortfolioRpc_DeletePortfolioProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePortfolioProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RdPortfolioRpcServer).DeletePortfolioProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RdPortfolioRpc_DeletePortfolioProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RdPortfolioRpcServer).DeletePortfolioProfile(ctx, req.(*DeletePortfolioProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RdPortfolioRpc_ServiceDesc is the grpc.ServiceDesc for RdPortfolioRpc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,6 +336,14 @@ var RdPortfolioRpc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePortfolioProfile",
 			Handler:    _RdPortfolioRpc_CreatePortfolioProfile_Handler,
+		},
+		{
+			MethodName: "UpdatePortfolioProfile",
+			Handler:    _RdPortfolioRpc_UpdatePortfolioProfile_Handler,
+		},
+		{
+			MethodName: "DeletePortfolioProfile",
+			Handler:    _RdPortfolioRpc_DeletePortfolioProfile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

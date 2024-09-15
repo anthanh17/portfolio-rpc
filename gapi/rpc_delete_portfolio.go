@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rpc.CreatePortfolioProfileRequest) (*rd_portfolio_rpc.CreatePortfolioProfileResponse, error) {
+func (s *Server) DeletePortfolioProfile(ctx context.Context, in *rd_portfolio_rpc.DeletePortfolioProfileRequest) (*rd_portfolio_rpc.DeletePortfolioProfileResponse, error) {
 	// table: portfolios
 	portfolioId := uuid.New().String()
 
@@ -107,7 +107,7 @@ func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 	}
 
 	fmt.Printf("==> Created portfolioId: %s", portfolioId)
-	return &rd_portfolio_rpc.CreatePortfolioProfileResponse{
+	return &rd_portfolio_rpc.DeletePortfolioProfileResponse{
 		Status: true,
 	}, nil
 }

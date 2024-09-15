@@ -74,6 +74,8 @@ service RdPortfolioRpc {
   rpc GetOpts(GetPortfolioOptsReq) returns(GetPortfolioOptsRes);
 
   rpc CreatePortfolioProfile (CreatePortfolioProfileRequest) returns (CreatePortfolioProfileResponse) {}
+  rpc UpdatePortfolioProfile (UpdatePortfolioProfileRequest) returns (UpdatePortfolioProfileResponse) {}
+  rpc DeletePortfolioProfile (DeletePortfolioProfileRequest) returns (DeletePortfolioProfileResponse) {}
 }
 
 message PortfolioAsset {
@@ -93,5 +95,28 @@ message CreatePortfolioProfileRequest {
 }
 
 message CreatePortfolioProfileResponse {
+  bool status = 1;
+}
+
+message UpdatePortfolioProfileRequest {
+  string profile_id = 1;
+  string category_id = 2;
+  string name = 3;
+  repeated string organization_id = 4;
+  repeated string branch_id = 5;
+  repeated string advisor_id = 6;
+  repeated PortfolioAsset assets = 7;
+  string privacy = 8;
+}
+
+message UpdatePortfolioProfileResponse {
+  bool status = 1;
+}
+
+message DeletePortfolioProfileRequest {
+  string profile_id = 1;
+}
+
+message DeletePortfolioProfileResponse {
   bool status = 1;
 }

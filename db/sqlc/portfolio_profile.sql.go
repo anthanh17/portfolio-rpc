@@ -240,7 +240,7 @@ func (q *Queries) CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) 
 	return i, err
 }
 
-const createPBranche = `-- name: CreatePBranche :one
+const createPBranch = `-- name: CreatePBranch :one
 INSERT INTO hamonix_business.p_branches (
   portfolio_id,
   branch_id
@@ -249,13 +249,13 @@ INSERT INTO hamonix_business.p_branches (
 ) RETURNING portfolio_id, branch_id
 `
 
-type CreatePBrancheParams struct {
+type CreatePBranchParams struct {
 	PortfolioID string      `json:"portfolio_id"`
 	BranchID    pgtype.Text `json:"branch_id"`
 }
 
-func (q *Queries) CreatePBranche(ctx context.Context, arg CreatePBrancheParams) (HamonixBusinessPBranch, error) {
-	row := q.db.QueryRow(ctx, createPBranche, arg.PortfolioID, arg.BranchID)
+func (q *Queries) CreatePBranch(ctx context.Context, arg CreatePBranchParams) (HamonixBusinessPBranch, error) {
+	row := q.db.QueryRow(ctx, createPBranch, arg.PortfolioID, arg.BranchID)
 	var i HamonixBusinessPBranch
 	err := row.Scan(&i.PortfolioID, &i.BranchID)
 	return i, err
@@ -381,6 +381,366 @@ type CreateTickerPriceParams struct {
 
 func (q *Queries) CreateTickerPrice(ctx context.Context, arg CreateTickerPriceParams) (HamonixBusinessTickerPrice, error) {
 	row := q.db.QueryRow(ctx, createTickerPrice,
+		arg.TickerID,
+		arg.Open,
+		arg.Low,
+		arg.Close,
+		arg.Date,
+	)
+	var i HamonixBusinessTickerPrice
+	err := row.Scan(
+		&i.TickerID,
+		&i.Open,
+		&i.High,
+		&i.Low,
+		&i.Close,
+		&i.Date,
+	)
+	return i, err
+}
+
+const updateAsset = `-- name: UpdateAsset :one
+UPDATE hamonix_business.assets
+SET
+  price = $3,
+  allocation = $4
+WHERE portfolio_id = $1 AND ticker_id = $2
+RETURNING id, portfolio_id, ticker_id, price, allocation
+`
+
+type UpdateAssetParams struct {
+	PortfolioID string  `json:"portfolio_id"`
+	TickerID    int32   `json:"ticker_id"`
+	Price       float64 `json:"price"`
+	Allocation  float64 `json:"allocation"`
+}
+
+func (q *Queries) UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error) {
+	row := q.db.QueryRow(ctx, updateAsset,
+		arg.PortfolioID,
+		arg.TickerID,
+		arg.Price,
+		arg.Allocation,
+	)
+	var i HamonixBusinessAsset
+	err := row.Scan(
+		&i.ID,
+		&i.PortfolioID,
+		&i.TickerID,
+		&i.Price,
+		&i.Allocation,
+	)
+	return i, err
+}
+
+const updateEqAccount = `-- name: UpdateEqAccount :one
+UPDATE hamonix_business.eq_accounts
+SET
+  code = $2
+WHERE advisor_id = $1
+RETURNING id, advisor_id, code
+`
+
+type UpdateEqAccountParams struct {
+	AdvisorID pgtype.Text `json:"advisor_id"`
+	Code      string      `json:"code"`
+}
+
+func (q *Queries) UpdateEqAccount(ctx context.Context, arg UpdateEqAccountParams) (HamonixBusinessEqAccount, error) {
+	row := q.db.QueryRow(ctx, updateEqAccount, arg.AdvisorID, arg.Code)
+	var i HamonixBusinessEqAccount
+	err := row.Scan(&i.ID, &i.AdvisorID, &i.Code)
+	return i, err
+}
+
+const updateEqAdvisor = `-- name: UpdateEqAdvisor :one
+UPDATE hamonix_business.eq_advisors
+SET
+  code = $2
+WHERE id = $1
+RETURNING id, code, description
+`
+
+type UpdateEqAdvisorParams struct {
+	ID   string      `json:"id"`
+	Code pgtype.Text `json:"code"`
+}
+
+func (q *Queries) UpdateEqAdvisor(ctx context.Context, arg UpdateEqAdvisorParams) (HamonixBusinessEqAdvisor, error) {
+	row := q.db.QueryRow(ctx, updateEqAdvisor, arg.ID, arg.Code)
+	var i HamonixBusinessEqAdvisor
+	err := row.Scan(&i.ID, &i.Code, &i.Description)
+	return i, err
+}
+
+const updateEqBackoffice = `-- name: UpdateEqBackoffice :one
+UPDATE hamonix_business.eq_backoffices
+SET
+  name = $2,
+  description = $3
+WHERE whitelable_id = $1
+RETURNING id, whitelable_id, name, description
+`
+
+type UpdateEqBackofficeParams struct {
+	WhitelableID pgtype.Text `json:"whitelable_id"`
+	Name         string      `json:"name"`
+	Description  pgtype.Text `json:"description"`
+}
+
+func (q *Queries) UpdateEqBackoffice(ctx context.Context, arg UpdateEqBackofficeParams) (HamonixBusinessEqBackoffice, error) {
+	row := q.db.QueryRow(ctx, updateEqBackoffice, arg.WhitelableID, arg.Name, arg.Description)
+	var i HamonixBusinessEqBackoffice
+	err := row.Scan(
+		&i.ID,
+		&i.WhitelableID,
+		&i.Name,
+		&i.Description,
+	)
+	return i, err
+}
+
+const updateEqBranch = `-- name: UpdateEqBranch :one
+UPDATE hamonix_business.eq_branchs
+SET
+  code = $2
+WHERE id = $1
+RETURNING id, code, description
+`
+
+type UpdateEqBranchParams struct {
+	ID   string `json:"id"`
+	Code string `json:"code"`
+}
+
+func (q *Queries) UpdateEqBranch(ctx context.Context, arg UpdateEqBranchParams) (HamonixBusinessEqBranch, error) {
+	row := q.db.QueryRow(ctx, updateEqBranch, arg.ID, arg.Code)
+	var i HamonixBusinessEqBranch
+	err := row.Scan(&i.ID, &i.Code, &i.Description)
+	return i, err
+}
+
+const updateEqOrganization = `-- name: UpdateEqOrganization :one
+UPDATE hamonix_business.eq_organizations
+SET
+  code = $2,
+  description = $3
+WHERE backoffice_id = $1
+RETURNING id, backoffice_id, code, description
+`
+
+type UpdateEqOrganizationParams struct {
+	BackofficeID pgtype.Text `json:"backoffice_id"`
+	Code         string      `json:"code"`
+	Description  pgtype.Text `json:"description"`
+}
+
+func (q *Queries) UpdateEqOrganization(ctx context.Context, arg UpdateEqOrganizationParams) (HamonixBusinessEqOrganization, error) {
+	row := q.db.QueryRow(ctx, updateEqOrganization, arg.BackofficeID, arg.Code, arg.Description)
+	var i HamonixBusinessEqOrganization
+	err := row.Scan(
+		&i.ID,
+		&i.BackofficeID,
+		&i.Code,
+		&i.Description,
+	)
+	return i, err
+}
+
+const updateEqWhitelable = `-- name: UpdateEqWhitelable :one
+UPDATE hamonix_business.eq_whitelables
+SET
+  name = $2,
+  url = $3,
+  description = $4
+WHERE id = $1
+RETURNING id, name, url, description
+`
+
+type UpdateEqWhitelableParams struct {
+	ID          string      `json:"id"`
+	Name        string      `json:"name"`
+	Url         string      `json:"url"`
+	Description pgtype.Text `json:"description"`
+}
+
+func (q *Queries) UpdateEqWhitelable(ctx context.Context, arg UpdateEqWhitelableParams) (HamonixBusinessEqWhitelable, error) {
+	row := q.db.QueryRow(ctx, updateEqWhitelable,
+		arg.ID,
+		arg.Name,
+		arg.Url,
+		arg.Description,
+	)
+	var i HamonixBusinessEqWhitelable
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Url,
+		&i.Description,
+	)
+	return i, err
+}
+
+const updatePAdvisor = `-- name: UpdatePAdvisor :one
+UPDATE hamonix_business.p_advisors
+SET
+  advisor_id = $3
+WHERE portfolio_id = $1 AND advisor_id = $2
+RETURNING portfolio_id, advisor_id
+`
+
+type UpdatePAdvisorParams struct {
+	PortfolioID string      `json:"portfolio_id"`
+	AdvisorID   pgtype.Text `json:"advisor_id"`
+	AdvisorID_2 pgtype.Text `json:"advisor_id_2"`
+}
+
+func (q *Queries) UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error) {
+	row := q.db.QueryRow(ctx, updatePAdvisor, arg.PortfolioID, arg.AdvisorID, arg.AdvisorID_2)
+	var i HamonixBusinessPAdvisor
+	err := row.Scan(&i.PortfolioID, &i.AdvisorID)
+	return i, err
+}
+
+const updatePBranch = `-- name: UpdatePBranch :one
+UPDATE hamonix_business.p_branches
+SET
+  branch_id = $3
+WHERE portfolio_id = $1 AND branch_id = $2
+RETURNING portfolio_id, branch_id
+`
+
+type UpdatePBranchParams struct {
+	PortfolioID string      `json:"portfolio_id"`
+	BranchID    pgtype.Text `json:"branch_id"`
+	BranchID_2  pgtype.Text `json:"branch_id_2"`
+}
+
+func (q *Queries) UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error) {
+	row := q.db.QueryRow(ctx, updatePBranch, arg.PortfolioID, arg.BranchID, arg.BranchID_2)
+	var i HamonixBusinessPBranch
+	err := row.Scan(&i.PortfolioID, &i.BranchID)
+	return i, err
+}
+
+const updatePCategory = `-- name: UpdatePCategory :one
+UPDATE hamonix_business.p_categories
+SET
+  category_id = $2
+WHERE portfolio_id = $1
+RETURNING portfolio_id, category_id
+`
+
+type UpdatePCategoryParams struct {
+	PortfolioID string      `json:"portfolio_id"`
+	CategoryID  pgtype.Text `json:"category_id"`
+}
+
+func (q *Queries) UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error) {
+	row := q.db.QueryRow(ctx, updatePCategory, arg.PortfolioID, arg.CategoryID)
+	var i HamonixBusinessPCategory
+	err := row.Scan(&i.PortfolioID, &i.CategoryID)
+	return i, err
+}
+
+const updatePOrganization = `-- name: UpdatePOrganization :one
+UPDATE hamonix_business.p_organizations
+SET
+  organization_id = $3
+WHERE portfolio_id = $1 AND organization_id = $2
+RETURNING portfolio_id, organization_id
+`
+
+type UpdatePOrganizationParams struct {
+	PortfolioID      string      `json:"portfolio_id"`
+	OrganizationID   pgtype.Text `json:"organization_id"`
+	OrganizationID_2 pgtype.Text `json:"organization_id_2"`
+}
+
+func (q *Queries) UpdatePOrganization(ctx context.Context, arg UpdatePOrganizationParams) (HamonixBusinessPOrganization, error) {
+	row := q.db.QueryRow(ctx, updatePOrganization, arg.PortfolioID, arg.OrganizationID, arg.OrganizationID_2)
+	var i HamonixBusinessPOrganization
+	err := row.Scan(&i.PortfolioID, &i.OrganizationID)
+	return i, err
+}
+
+const updatePortfolio = `-- name: UpdatePortfolio :one
+UPDATE hamonix_business.portfolios
+SET
+  name = $2,
+  privacy = $3
+WHERE id = $1
+RETURNING id, name, privacy, created_at, updated_at
+`
+
+type UpdatePortfolioParams struct {
+	ID      string           `json:"id"`
+	Name    string           `json:"name"`
+	Privacy PortfolioPrivacy `json:"privacy"`
+}
+
+func (q *Queries) UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams) (HamonixBusinessPortfolio, error) {
+	row := q.db.QueryRow(ctx, updatePortfolio, arg.ID, arg.Name, arg.Privacy)
+	var i HamonixBusinessPortfolio
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePortfolioCategory = `-- name: UpdatePortfolioCategory :one
+UPDATE hamonix_business.portfolio_categories
+SET
+  name = $2,
+  description = $3
+WHERE id = $1
+RETURNING id, name, description, created_at, updated_at
+`
+
+type UpdatePortfolioCategoryParams struct {
+	ID          int64       `json:"id"`
+	Name        string      `json:"name"`
+	Description pgtype.Text `json:"description"`
+}
+
+func (q *Queries) UpdatePortfolioCategory(ctx context.Context, arg UpdatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error) {
+	row := q.db.QueryRow(ctx, updatePortfolioCategory, arg.ID, arg.Name, arg.Description)
+	var i HamonixBusinessPortfolioCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateTickerPrice = `-- name: UpdateTickerPrice :one
+UPDATE hamonix_business.ticker_prices
+SET
+  open = $2,
+  low = $3,
+  close = $4,
+  date = $5
+WHERE ticker_id = $1
+RETURNING ticker_id, open, high, low, close, date
+`
+
+type UpdateTickerPriceParams struct {
+	TickerID int64       `json:"ticker_id"`
+	Open     float64     `json:"open"`
+	Low      float64     `json:"low"`
+	Close    float64     `json:"close"`
+	Date     pgtype.Date `json:"date"`
+}
+
+func (q *Queries) UpdateTickerPrice(ctx context.Context, arg UpdateTickerPriceParams) (HamonixBusinessTickerPrice, error) {
+	row := q.db.QueryRow(ctx, updateTickerPrice,
 		arg.TickerID,
 		arg.Open,
 		arg.Low,

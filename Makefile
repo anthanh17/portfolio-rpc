@@ -3,7 +3,7 @@ DB_PORT = 5432
 DB_USERNAME = root
 DB_PASSWORD = secret
 DB_DATABASE = hehe_business
-DB_SCHEMA = hehe_business
+DB_SCHEMA = hamonix_business
 
 DB_URL = postgres://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_DATABASE)?sslmode=disable&search_path=$(DB_SCHEMA)
 # ----------------------------- Setup database ---------------------------------

@@ -1,5 +1,4 @@
 CREATE SCHEMA IF NOT EXISTS hamonix_business;
-
 CREATE TYPE "portfolio_privacy" AS ENUM (
   'public',
   'private',
