@@ -9,17 +9,19 @@ import (
 	"go.uber.org/zap"
 )
 
-// Store defines all functions to execute db queries and transactions
 // Repository pattern
 type Store interface {
 	Querier
-	// Expand more transactions in the future
+	// Extend more transactions
+	CreatePortfolioTx(ctx context.Context, arg CreatePortfolioTxParams) (CreatePortfolioTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
 type SQLStore struct {
-	connPool *pgxpool.Pool
+	// All individual query functions provided by Queries will be available to Store
 	*Queries
+	// Extend more transactions
+	connPool *pgxpool.Pool
 }
 
 // NewStore creates a new store
