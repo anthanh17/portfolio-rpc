@@ -126,7 +126,7 @@ func (s *Server) DeletePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 		}
 	}
 
-	fmt.Printf("==> Deleted portfolioId: %s", in.ProfileId)
+	fmt.Printf("\n==> Deleted portfolioId: %s", in.ProfileId)
 	return &rd_portfolio_rpc.DeletePortfolioProfileResponse{
 		Status: true,
 	}, nil

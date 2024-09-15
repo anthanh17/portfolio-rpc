@@ -106,7 +106,7 @@ func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 		}
 	}
 
-	fmt.Printf("==> Created portfolioId: %s", portfolioId)
+	fmt.Printf("\n==> Created portfolioId: %s", portfolioId)
 	return &rd_portfolio_rpc.CreatePortfolioProfileResponse{
 		Status: true,
 	}, nil

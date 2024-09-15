@@ -103,7 +103,7 @@ func (s *Server) UpdatePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 		}
 	}
 
-	fmt.Printf("==> Updated portfolioId: %s", in.ProfileId)
+	fmt.Printf("\n==> Updated portfolioId: %s", in.ProfileId)
 	return &rd_portfolio_rpc.UpdatePortfolioProfileResponse{
 		Status: true,
 	}, nil
