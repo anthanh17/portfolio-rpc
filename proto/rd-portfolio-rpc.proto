@@ -87,4 +87,36 @@ message PortfolioAsset {
 message CreatePortfolioProfileRequest {
   string category_id = 1;
   string name = 2;
-  repeated string org
+  repeated string organization_id = 3;
+  repeated string branch_id = 4;
+  repeated string advisor_id = 5;
+  repeated PortfolioAsset assets = 6;
+  string privacy = 7;
+}
+
+message CreatePortfolioProfileResponse {
+  bool status = 1;
+}
+
+message UpdatePortfolioProfileRequest {
+  string profile_id = 1;
+  string category_id = 2;
+  string name = 3;
+  repeated string organization_id = 4;
+  repeated string branch_id = 5;
+  repeated string advisor_id = 6;
+  repeated PortfolioAsset assets = 7;
+  string privacy = 8;
+}
+
+message UpdatePortfolioProfileResponse {
+  bool status = 1;
+}
+
+message DeletePortfolioProfileRequest {
+  string profile_id = 1;
+}
+
+message DeletePortfolioProfileResponse {
+  bool status = 1;
+}
