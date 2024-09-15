@@ -6,7 +6,6 @@ import (
 	db "portfolio-profile-rpc/db/sqlc"
 	"portfolio-profile-rpc/rd_portfolio_rpc"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,30 +13,25 @@ import (
 
 func (s *Server) DeletePortfolioProfile(ctx context.Context, in *rd_portfolio_rpc.DeletePortfolioProfileRequest) (*rd_portfolio_rpc.DeletePortfolioProfileResponse, error) {
 	// table: portfolios
-	portfolioId := uuid.New().String()
-
-	argPortfolio := db.CreatePortfolioParams{
-		ID:      portfolioId,
-		Name:    in.Name,
-		Privacy: db.PortfolioPrivacy(in.Privacy),
-	}
-
-	_, err := s.store.CreatePortfolio(ctx, argPortfolio)
+	err := s.store.DeletePortfolio(ctx, in.ProfileId)
 	if err != nil {
-		s.logger.Sugar().Infof("cannot CreatePortfolio: %v\n", err)
-		return nil, status.Errorf(codes.Internal, "failed to CreatePortfolio: %s", err)
+		s.logger.Sugar().Infof("cannot DeletePortfolio: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to DeletePortfolio: %s", err)
 	}
 
 	// table: assets
-	for _, asset := range in.Assets {
-		argAssest := db.CreateAssetParams{
-			PortfolioID: portfolioId,
-			TickerID:    int32(asset.TickerId),
-			Price:       asset.Price,
-			Allocation:  asset.Allocation,
+	assets, err := s.store.GetAssetsByPortfolioId(ctx, in.ProfileId)
+	if err != nil {
+		s.logger.Sugar().Infof("cannot GetAssetsByPortfolioId: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to GetAssetsByPortfolioId: %s", err)
+	}
+	for _, asset := range assets {
+		argAssest := db.DeleteAssetParams{
+			PortfolioID: asset.PortfolioID,
+			TickerID:    int32(asset.TickerID),
 		}
 
-		_, err := s.store.CreateAsset(ctx, argAssest)
+		err := s.store.DeleteAsset(ctx, argAssest)
 		if err != nil {
 			s.logger.Sugar().Infof("cannot CreateAsset: %v\n", err)
 			return nil, status.Errorf(codes.Internal, "failed to CreateAsset: %s", err)
@@ -45,68 +39,94 @@ func (s *Server) DeletePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 	}
 
 	// table: p_categories
-	argPCategory := db.CreatePCategoryParams{
-		PortfolioID: portfolioId,
-		CategoryID: pgtype.Text{
-			String: in.CategoryId,
-			Valid:  true,
-		},
-	}
-	_, err = s.store.CreatePCategory(ctx, argPCategory)
+	categories, err := s.store.GetPCategoryByPortfolioId(ctx, in.ProfileId)
 	if err != nil {
-		s.logger.Sugar().Infof("cannot CreatePCategory: %v\n", err)
-		return nil, status.Errorf(codes.Internal, "failed to CreatePCategory: %s", err)
+		s.logger.Sugar().Infof("cannot GetPCategoryByPortfolioId: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to GetPCategoryByPortfolioId: %s", err)
 	}
 
-	// table: p_branches
-	for _, branch := range in.BranchId {
-		argPBranch := db.CreatePBranchParams{
-			PortfolioID: portfolioId,
-			BranchID: pgtype.Text{
-				String: branch,
+	for _, category := range categories {
+		argPCategory := db.DeletePCategoryParams{
+			PortfolioID: category.PortfolioID,
+			CategoryID: pgtype.Text{
+				String: category.CategoryID.String,
 				Valid:  true,
 			},
 		}
-		_, err = s.store.CreatePBranch(ctx, argPBranch)
+		err = s.store.DeletePCategory(ctx, argPCategory)
 		if err != nil {
-			s.logger.Sugar().Infof("cannot CreatePBranche: %v\n", err)
-			return nil, status.Errorf(codes.Internal, "failed to CreatePBranche: %s", err)
+			s.logger.Sugar().Infof("cannot DeletePCategory: %v\n", err)
+			return nil, status.Errorf(codes.Internal, "failed to DeletePCategory: %s", err)
+		}
+	}
+
+	// table: p_branches
+	branches, err := s.store.GetPBranchByPortfolioId(ctx, in.ProfileId)
+	if err != nil {
+		s.logger.Sugar().Infof("cannot GetPBranchByPortfolioId: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to GetPBranchByPortfolioId: %s", err)
+	}
+
+	for _, branch := range branches {
+		argPBranch := db.DeletePBranchParams{
+			PortfolioID: branch.PortfolioID,
+			BranchID: pgtype.Text{
+				String: branch.BranchID.String,
+				Valid:  true,
+			},
+		}
+		err = s.store.DeletePBranch(ctx, argPBranch)
+		if err != nil {
+			s.logger.Sugar().Infof("cannot DeletePBranch: %v\n", err)
+			return nil, status.Errorf(codes.Internal, "failed to DeletePBranch: %s", err)
 		}
 	}
 
 	// table: p_advisors
-	for _, advisor := range in.AdvisorId {
-		argPAdvisor := db.CreatePAdvisorParams{
-			PortfolioID: portfolioId,
+	advisors, err := s.store.GetPAdvisorByPortfolioId(ctx, in.ProfileId)
+	if err != nil {
+		s.logger.Sugar().Infof("cannot GetPAdvisorByPortfolioId: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to GetPAdvisorByPortfolioId: %s", err)
+	}
+
+	for _, advisor := range advisors {
+		argPAdvisor := db.DeletePAdvisorParams{
+			PortfolioID: advisor.PortfolioID,
 			AdvisorID: pgtype.Text{
-				String: advisor,
+				String: advisor.AdvisorID.String,
 				Valid:  true,
 			},
 		}
-		_, err = s.store.CreatePAdvisor(ctx, argPAdvisor)
+		err = s.store.DeletePAdvisor(ctx, argPAdvisor)
 		if err != nil {
-			s.logger.Sugar().Infof("cannot CreatePAdvisor: %v\n", err)
-			return nil, status.Errorf(codes.Internal, "failed to CreatePAdvisor: %s", err)
+			s.logger.Sugar().Infof("cannot DeletePAdvisor: %v\n", err)
+			return nil, status.Errorf(codes.Internal, "failed to DeletePAdvisor: %s", err)
 		}
 	}
 
 	// table: p_organizations
-	for _, organization := range in.AdvisorId {
-		argPOrganization := db.CreatePOrganizationParams{
-			PortfolioID: portfolioId,
+	organizations, err := s.store.GetPOrganizationByPortfolioId(ctx, in.ProfileId)
+	if err != nil {
+		s.logger.Sugar().Infof("cannot GetPOrganizationByPortfolioId: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to GetPOrganizationByPortfolioId: %s", err)
+	}
+
+	for _, organization := range organizations {
+		argPOrganization := db.DeletePOrganizationParams{
+			PortfolioID: organization.PortfolioID,
 			OrganizationID: pgtype.Text{
-				String: organization,
+				String: organization.OrganizationID.String,
 				Valid:  true,
 			},
 		}
-		_, err = s.store.CreatePOrganization(ctx, argPOrganization)
+		err = s.store.DeletePOrganization(ctx, argPOrganization)
 		if err != nil {
-			s.logger.Sugar().Infof("cannot CreatePOrganization: %v\n", err)
-			return nil, status.Errorf(codes.Internal, "failed to CreatePOrganization: %s", err)
+			s.logger.Sugar().Infof("cannot DeletePOrganization: %v\n", err)
+			return nil, status.Errorf(codes.Internal, "failed to DeletePOrganization: %s", err)
 		}
 	}
 
-	fmt.Printf("==> Created portfolioId: %s", portfolioId)
+	fmt.Printf("==> Deleted portfolioId: %s", in.ProfileId)
 	return &rd_portfolio_rpc.DeletePortfolioProfileResponse{
 		Status: true,
 	}, nil

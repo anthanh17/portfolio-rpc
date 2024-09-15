@@ -399,6 +399,242 @@ func (q *Queries) CreateTickerPrice(ctx context.Context, arg CreateTickerPricePa
 	return i, err
 }
 
+const deleteAsset = `-- name: DeleteAsset :exec
+DELETE FROM hamonix_business.assets
+WHERE portfolio_id = $1 AND ticker_id = $2
+`
+
+type DeleteAssetParams struct {
+	PortfolioID string `json:"portfolio_id"`
+	TickerID    int32  `json:"ticker_id"`
+}
+
+func (q *Queries) DeleteAsset(ctx context.Context, arg DeleteAssetParams) error {
+	_, err := q.db.Exec(ctx, deleteAsset, arg.PortfolioID, arg.TickerID)
+	return err
+}
+
+const deletePAdvisor = `-- name: DeletePAdvisor :exec
+DELETE FROM hamonix_business.p_advisors
+WHERE portfolio_id = $1 AND advisor_id = $2
+`
+
+type DeletePAdvisorParams struct {
+	PortfolioID string      `json:"portfolio_id"`
+	AdvisorID   pgtype.Text `json:"advisor_id"`
+}
+
+func (q *Queries) DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error {
+	_, err := q.db.Exec(ctx, deletePAdvisor, arg.PortfolioID, arg.AdvisorID)
+	return err
+}
+
+const deletePBranch = `-- name: DeletePBranch :exec
+DELETE FROM hamonix_business.p_branches
+WHERE portfolio_id = $1 AND branch_id = $2
+`
+
+type DeletePBranchParams struct {
+	PortfolioID string      `json:"portfolio_id"`
+	BranchID    pgtype.Text `json:"branch_id"`
+}
+
+func (q *Queries) DeletePBranch(ctx context.Context, arg DeletePBranchParams) error {
+	_, err := q.db.Exec(ctx, deletePBranch, arg.PortfolioID, arg.BranchID)
+	return err
+}
+
+const deletePCategory = `-- name: DeletePCategory :exec
+DELETE FROM hamonix_business.p_categories
+WHERE portfolio_id = $1 AND category_id = $2
+`
+
+type DeletePCategoryParams struct {
+	PortfolioID string      `json:"portfolio_id"`
+	CategoryID  pgtype.Text `json:"category_id"`
+}
+
+func (q *Queries) DeletePCategory(ctx context.Context, arg DeletePCategoryParams) error {
+	_, err := q.db.Exec(ctx, deletePCategory, arg.PortfolioID, arg.CategoryID)
+	return err
+}
+
+const deletePOrganization = `-- name: DeletePOrganization :exec
+DELETE FROM hamonix_business.p_organizations
+WHERE portfolio_id = $1 AND organization_id = $2
+`
+
+type DeletePOrganizationParams struct {
+	PortfolioID    string      `json:"portfolio_id"`
+	OrganizationID pgtype.Text `json:"organization_id"`
+}
+
+func (q *Queries) DeletePOrganization(ctx context.Context, arg DeletePOrganizationParams) error {
+	_, err := q.db.Exec(ctx, deletePOrganization, arg.PortfolioID, arg.OrganizationID)
+	return err
+}
+
+const deletePortfolio = `-- name: DeletePortfolio :exec
+DELETE FROM hamonix_business.portfolios
+WHERE id = $1
+`
+
+func (q *Queries) DeletePortfolio(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, deletePortfolio, id)
+	return err
+}
+
+const deletePortfolioCategory = `-- name: DeletePortfolioCategory :exec
+DELETE FROM hamonix_business.portfolio_categories
+WHERE id = $1
+`
+
+func (q *Queries) DeletePortfolioCategory(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePortfolioCategory, id)
+	return err
+}
+
+const deleteTickerPrice = `-- name: DeleteTickerPrice :exec
+DELETE FROM hamonix_business.ticker_prices
+WHERE ticker_id = $1
+`
+
+func (q *Queries) DeleteTickerPrice(ctx context.Context, tickerID int64) error {
+	_, err := q.db.Exec(ctx, deleteTickerPrice, tickerID)
+	return err
+}
+
+const getAssetsByPortfolioId = `-- name: GetAssetsByPortfolioId :many
+SELECT id, portfolio_id, ticker_id, price, allocation FROM hamonix_business.assets
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error) {
+	rows, err := q.db.Query(ctx, getAssetsByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HamonixBusinessAsset{}
+	for rows.Next() {
+		var i HamonixBusinessAsset
+		if err := rows.Scan(
+			&i.ID,
+			&i.PortfolioID,
+			&i.TickerID,
+			&i.Price,
+			&i.Allocation,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPAdvisorByPortfolioId = `-- name: GetPAdvisorByPortfolioId :many
+SELECT portfolio_id, advisor_id FROM hamonix_business.p_advisors
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error) {
+	rows, err := q.db.Query(ctx, getPAdvisorByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HamonixBusinessPAdvisor{}
+	for rows.Next() {
+		var i HamonixBusinessPAdvisor
+		if err := rows.Scan(&i.PortfolioID, &i.AdvisorID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPBranchByPortfolioId = `-- name: GetPBranchByPortfolioId :many
+SELECT portfolio_id, branch_id FROM hamonix_business.p_branches
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error) {
+	rows, err := q.db.Query(ctx, getPBranchByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HamonixBusinessPBranch{}
+	for rows.Next() {
+		var i HamonixBusinessPBranch
+		if err := rows.Scan(&i.PortfolioID, &i.BranchID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPCategoryByPortfolioId = `-- name: GetPCategoryByPortfolioId :many
+SELECT portfolio_id, category_id FROM hamonix_business.p_categories
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error) {
+	rows, err := q.db.Query(ctx, getPCategoryByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HamonixBusinessPCategory{}
+	for rows.Next() {
+		var i HamonixBusinessPCategory
+		if err := rows.Scan(&i.PortfolioID, &i.CategoryID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPOrganizationByPortfolioId = `-- name: GetPOrganizationByPortfolioId :many
+SELECT portfolio_id, organization_id FROM hamonix_business.p_organizations
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error) {
+	rows, err := q.db.Query(ctx, getPOrganizationByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HamonixBusinessPOrganization{}
+	for rows.Next() {
+		var i HamonixBusinessPOrganization
+		if err := rows.Scan(&i.PortfolioID, &i.OrganizationID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateAsset = `-- name: UpdateAsset :one
 UPDATE hamonix_business.assets
 SET
@@ -626,18 +862,19 @@ func (q *Queries) UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (H
 const updatePCategory = `-- name: UpdatePCategory :one
 UPDATE hamonix_business.p_categories
 SET
-  category_id = $2
-WHERE portfolio_id = $1
+  category_id = $3
+WHERE portfolio_id = $1 AND category_id = $2
 RETURNING portfolio_id, category_id
 `
 
 type UpdatePCategoryParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	CategoryID  pgtype.Text `json:"category_id"`
+	PortfolioID  string      `json:"portfolio_id"`
+	CategoryID   pgtype.Text `json:"category_id"`
+	CategoryID_2 pgtype.Text `json:"category_id_2"`
 }
 
 func (q *Queries) UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error) {
-	row := q.db.QueryRow(ctx, updatePCategory, arg.PortfolioID, arg.CategoryID)
+	row := q.db.QueryRow(ctx, updatePCategory, arg.PortfolioID, arg.CategoryID, arg.CategoryID_2)
 	var i HamonixBusinessPCategory
 	err := row.Scan(&i.PortfolioID, &i.CategoryID)
 	return i, err

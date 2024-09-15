@@ -161,8 +161,8 @@ RETURNING *;
 -- name: UpdatePCategory :one
 UPDATE hamonix_business.p_categories
 SET
-  category_id = $2
-WHERE portfolio_id = $1
+  category_id = $3
+WHERE portfolio_id = $1 AND category_id = $2
 RETURNING *;
 
 -- name: UpdatePBranch :one
@@ -231,3 +231,55 @@ SET
   code = $2
 WHERE advisor_id = $1
 RETURNING *;
+
+-- name: DeletePortfolio :exec
+DELETE FROM hamonix_business.portfolios
+WHERE id = $1;
+
+-- name: DeleteAsset :exec
+DELETE FROM hamonix_business.assets
+WHERE portfolio_id = $1 AND ticker_id = $2;
+
+-- name: DeleteTickerPrice :exec
+DELETE FROM hamonix_business.ticker_prices
+WHERE ticker_id = $1;
+
+-- name: DeletePortfolioCategory :exec
+DELETE FROM hamonix_business.portfolio_categories
+WHERE id = $1;
+
+-- name: DeletePCategory :exec
+DELETE FROM hamonix_business.p_categories
+WHERE portfolio_id = $1 AND category_id = $2;
+
+-- name: DeletePBranch :exec
+DELETE FROM hamonix_business.p_branches
+WHERE portfolio_id = $1 AND branch_id = $2;
+
+-- name: DeletePAdvisor :exec
+DELETE FROM hamonix_business.p_advisors
+WHERE portfolio_id = $1 AND advisor_id = $2;
+
+-- name: DeletePOrganization :exec
+DELETE FROM hamonix_business.p_organizations
+WHERE portfolio_id = $1 AND organization_id = $2;
+
+-- name: GetAssetsByPortfolioId :many
+SELECT * FROM hamonix_business.assets
+WHERE portfolio_id = $1;
+
+-- name: GetPCategoryByPortfolioId :many
+SELECT * FROM hamonix_business.p_categories
+WHERE portfolio_id = $1;
+
+-- name: GetPBranchByPortfolioId :many
+SELECT * FROM hamonix_business.p_branches
+WHERE portfolio_id = $1;
+
+-- name: GetPOrganizationByPortfolioId :many
+SELECT * FROM hamonix_business.p_organizations
+WHERE portfolio_id = $1;
+
+-- name: GetPAdvisorByPortfolioId :many
+SELECT * FROM hamonix_business.p_advisors
+WHERE portfolio_id = $1;

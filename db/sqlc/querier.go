@@ -23,6 +23,19 @@ type Querier interface {
 	CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error)
 	CreatePortfolioCategory(ctx context.Context, arg CreatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
 	CreateTickerPrice(ctx context.Context, arg CreateTickerPriceParams) (HamonixBusinessTickerPrice, error)
+	DeleteAsset(ctx context.Context, arg DeleteAssetParams) error
+	DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error
+	DeletePBranch(ctx context.Context, arg DeletePBranchParams) error
+	DeletePCategory(ctx context.Context, arg DeletePCategoryParams) error
+	DeletePOrganization(ctx context.Context, arg DeletePOrganizationParams) error
+	DeletePortfolio(ctx context.Context, id string) error
+	DeletePortfolioCategory(ctx context.Context, id int64) error
+	DeleteTickerPrice(ctx context.Context, tickerID int64) error
+	GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error)
+	GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error)
+	GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error)
+	GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error)
+	GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error)
 	UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error)
 	UpdateEqAccount(ctx context.Context, arg UpdateEqAccountParams) (HamonixBusinessEqAccount, error)
 	UpdateEqAdvisor(ctx context.Context, arg UpdateEqAdvisorParams) (HamonixBusinessEqAdvisor, error)
