@@ -17,25 +17,6 @@ INSERT INTO hamonix_business.assets (
   $1, $2, $3, $4
 ) RETURNING *;
 
--- name: CreateTickerPrice :one
-INSERT INTO hamonix_business.ticker_prices (
-  ticker_id,
-  open,
-  low,
-  close,
-  date
-) VALUES (
-  $1, $2, $3, $4, $5
-) RETURNING *;
-
--- name: CreatePortfolioCategory :one
-INSERT INTO hamonix_business.portfolio_categories (
-  name,
-  description
-) VALUES (
-  $1, $2
-) RETURNING *;
-
 -- name: CreatePCategory :one
 INSERT INTO hamonix_business.p_categories (
   portfolio_id,
@@ -68,62 +49,6 @@ INSERT INTO hamonix_business.p_organizations (
   $1, $2
 ) RETURNING *;
 
--- name: CreateEqWhitelable :one
-INSERT INTO hamonix_business.eq_whitelables (
-  id,
-  name,
-  url,
-  description
-) VALUES (
-  $1, $2, $3, $4
-) RETURNING *;
-
--- name: CreateEqBackoffice :one
-INSERT INTO hamonix_business.eq_backoffices (
-  id,
-  whitelable_id,
-  name,
-  description
-) VALUES (
-  $1, $2, $3, $4
-) RETURNING *;
-
--- name: CreateEqOrganization :one
-INSERT INTO hamonix_business.eq_organizations (
-  id,
-  backoffice_id,
-  code,
-  description
-) VALUES (
-  $1, $2, $3, $4
-) RETURNING *;
-
--- name: CreateEqBranch :one
-INSERT INTO hamonix_business.eq_branchs (
-  id,
-  code
-) VALUES (
-  $1, $2
-) RETURNING *;
-
--- name: CreateEqAdvisor :one
-INSERT INTO hamonix_business.eq_advisors (
-  id,
-  code,
-  description
-) VALUES (
-  $1, $2, $3
-) RETURNING *;
-
--- name: CreateEqAccount :one
-INSERT INTO hamonix_business.eq_accounts (
-  id,
-  advisor_id,
-  code
-) VALUES (
-  $1, $2, $3
-) RETURNING *;
-
 -- name: UpdatePortfolio :one
 UPDATE hamonix_business.portfolios
 SET
@@ -138,24 +63,6 @@ SET
   price = $3,
   allocation = $4
 WHERE portfolio_id = $1 AND ticker_id = $2
-RETURNING *;
-
--- name: UpdateTickerPrice :one
-UPDATE hamonix_business.ticker_prices
-SET
-  open = $2,
-  low = $3,
-  close = $4,
-  date = $5
-WHERE ticker_id = $1
-RETURNING *;
-
--- name: UpdatePortfolioCategory :one
-UPDATE hamonix_business.portfolio_categories
-SET
-  name = $2,
-  description = $3
-WHERE id = $1
 RETURNING *;
 
 -- name: UpdatePCategory :one
@@ -186,52 +93,6 @@ SET
 WHERE portfolio_id = $1 AND organization_id = $2
 RETURNING *;
 
--- name: UpdateEqWhitelable :one
-UPDATE hamonix_business.eq_whitelables
-SET
-  name = $2,
-  url = $3,
-  description = $4
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateEqBackoffice :one
-UPDATE hamonix_business.eq_backoffices
-SET
-  name = $2,
-  description = $3
-WHERE whitelable_id = $1
-RETURNING *;
-
--- name: UpdateEqOrganization :one
-UPDATE hamonix_business.eq_organizations
-SET
-  code = $2,
-  description = $3
-WHERE backoffice_id = $1
-RETURNING *;
-
--- name: UpdateEqBranch :one
-UPDATE hamonix_business.eq_branchs
-SET
-  code = $2
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateEqAdvisor :one
-UPDATE hamonix_business.eq_advisors
-SET
-  code = $2
-WHERE id = $1
-RETURNING *;
-
--- name: UpdateEqAccount :one
-UPDATE hamonix_business.eq_accounts
-SET
-  code = $2
-WHERE advisor_id = $1
-RETURNING *;
-
 -- name: DeletePortfolio :exec
 DELETE FROM hamonix_business.portfolios
 WHERE id = $1;
@@ -239,14 +100,6 @@ WHERE id = $1;
 -- name: DeleteAsset :exec
 DELETE FROM hamonix_business.assets
 WHERE portfolio_id = $1 AND ticker_id = $2;
-
--- name: DeleteTickerPrice :exec
-DELETE FROM hamonix_business.ticker_prices
-WHERE ticker_id = $1;
-
--- name: DeletePortfolioCategory :exec
-DELETE FROM hamonix_business.portfolio_categories
-WHERE id = $1;
 
 -- name: DeletePCategory :exec
 DELETE FROM hamonix_business.p_categories

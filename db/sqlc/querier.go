@@ -10,46 +10,31 @@ import (
 
 type Querier interface {
 	CreateAsset(ctx context.Context, arg CreateAssetParams) (HamonixBusinessAsset, error)
-	CreateEqAccount(ctx context.Context, arg CreateEqAccountParams) (HamonixBusinessEqAccount, error)
-	CreateEqAdvisor(ctx context.Context, arg CreateEqAdvisorParams) (HamonixBusinessEqAdvisor, error)
-	CreateEqBackoffice(ctx context.Context, arg CreateEqBackofficeParams) (HamonixBusinessEqBackoffice, error)
-	CreateEqBranch(ctx context.Context, arg CreateEqBranchParams) (HamonixBusinessEqBranch, error)
-	CreateEqOrganization(ctx context.Context, arg CreateEqOrganizationParams) (HamonixBusinessEqOrganization, error)
-	CreateEqWhitelable(ctx context.Context, arg CreateEqWhitelableParams) (HamonixBusinessEqWhitelable, error)
 	CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) (HamonixBusinessPAdvisor, error)
 	CreatePBranch(ctx context.Context, arg CreatePBranchParams) (HamonixBusinessPBranch, error)
 	CreatePCategory(ctx context.Context, arg CreatePCategoryParams) (HamonixBusinessPCategory, error)
 	CreatePOrganization(ctx context.Context, arg CreatePOrganizationParams) (HamonixBusinessPOrganization, error)
 	CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error)
-	CreatePortfolioCategory(ctx context.Context, arg CreatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
-	CreateTickerPrice(ctx context.Context, arg CreateTickerPriceParams) (HamonixBusinessTickerPrice, error)
 	DeleteAsset(ctx context.Context, arg DeleteAssetParams) error
 	DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error
 	DeletePBranch(ctx context.Context, arg DeletePBranchParams) error
 	DeletePCategory(ctx context.Context, arg DeletePCategoryParams) error
 	DeletePOrganization(ctx context.Context, arg DeletePOrganizationParams) error
 	DeletePortfolio(ctx context.Context, id string) error
-	DeletePortfolioCategory(ctx context.Context, id int64) error
-	DeleteTickerPrice(ctx context.Context, tickerID int64) error
 	GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error)
+	GetEQAdvisorByID(ctx context.Context, id string) (HamonixBusinessEqAdvisor, error)
+	GetEQBranchByID(ctx context.Context, id string) (HamonixBusinessEqBranch, error)
+	GetEQOrganizationByID(ctx context.Context, id string) (HamonixBusinessEqOrganization, error)
 	GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error)
 	GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error)
 	GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error)
 	GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error)
 	UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error)
-	UpdateEqAccount(ctx context.Context, arg UpdateEqAccountParams) (HamonixBusinessEqAccount, error)
-	UpdateEqAdvisor(ctx context.Context, arg UpdateEqAdvisorParams) (HamonixBusinessEqAdvisor, error)
-	UpdateEqBackoffice(ctx context.Context, arg UpdateEqBackofficeParams) (HamonixBusinessEqBackoffice, error)
-	UpdateEqBranch(ctx context.Context, arg UpdateEqBranchParams) (HamonixBusinessEqBranch, error)
-	UpdateEqOrganization(ctx context.Context, arg UpdateEqOrganizationParams) (HamonixBusinessEqOrganization, error)
-	UpdateEqWhitelable(ctx context.Context, arg UpdateEqWhitelableParams) (HamonixBusinessEqWhitelable, error)
 	UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error)
 	UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error)
 	UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error)
 	UpdatePOrganization(ctx context.Context, arg UpdatePOrganizationParams) (HamonixBusinessPOrganization, error)
 	UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams) (HamonixBusinessPortfolio, error)
-	UpdatePortfolioCategory(ctx context.Context, arg UpdatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
-	UpdateTickerPrice(ctx context.Context, arg UpdateTickerPriceParams) (HamonixBusinessTickerPrice, error)
 }
 
 var _ Querier = (*Queries)(nil)

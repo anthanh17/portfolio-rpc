@@ -12,7 +12,6 @@ import (
 )
 
 func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rpc.CreatePortfolioProfileRequest) (*rd_portfolio_rpc.CreatePortfolioProfileResponse, error) {
-	// table: portfolios
 	portfolioId := uuid.New().String()
 
 	// convert assests

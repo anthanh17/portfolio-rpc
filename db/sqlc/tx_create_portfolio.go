@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -42,7 +43,7 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 
 		_, err = q.CreatePortfolio(ctx, argPortfolio)
 		if err != nil {
-			return err
+			return errors.New("error CreatePortfolio " + err.Error())
 		}
 
 		// table: assets
@@ -56,7 +57,7 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 
 			_, err := q.CreateAsset(ctx, argAssest)
 			if err != nil {
-				return err
+				return errors.New("error CreateAsset " + err.Error())
 			}
 		}
 
@@ -70,7 +71,7 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 		}
 		_, err = q.CreatePCategory(ctx, argPCategory)
 		if err != nil {
-			return err
+			return errors.New("error CreatePCategory " + err.Error())
 		}
 
 		// table: p_branches
@@ -84,7 +85,7 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 			}
 			_, err = q.CreatePBranch(ctx, argPBranch)
 			if err != nil {
-				return err
+				return errors.New("error CreatePBranch " + err.Error())
 			}
 		}
 
@@ -99,12 +100,12 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 			}
 			_, err = q.CreatePAdvisor(ctx, argPAdvisor)
 			if err != nil {
-				return err
+				return errors.New("error CreatePAdvisor " + err.Error())
 			}
 		}
 
 		// table: p_organizations
-		for _, organization := range arg.AdvisorId {
+		for _, organization := range arg.OrganizationId {
 			argPOrganization := CreatePOrganizationParams{
 				PortfolioID: arg.PortfolioID,
 				OrganizationID: pgtype.Text{
@@ -114,7 +115,7 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 			}
 			_, err = q.CreatePOrganization(ctx, argPOrganization)
 			if err != nil {
-				return err
+				return errors.New("error CreatePOrganization " + err.Error())
 			}
 		}
 
