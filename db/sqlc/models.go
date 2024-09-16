@@ -131,7 +131,7 @@ type HamonixBusinessPortfolio struct {
 }
 
 type HamonixBusinessPortfolioCategory struct {
-	ID          int64       `json:"id"`
+	ID          string      `json:"id"`
 	Name        string      `json:"name"`
 	Description pgtype.Text `json:"description"`
 	CreatedAt   time.Time   `json:"created_at"`

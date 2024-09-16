@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -15,26 +17,31 @@ type Querier interface {
 	CreatePCategory(ctx context.Context, arg CreatePCategoryParams) (HamonixBusinessPCategory, error)
 	CreatePOrganization(ctx context.Context, arg CreatePOrganizationParams) (HamonixBusinessPOrganization, error)
 	CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error)
+	CreatePortfolioCategory(ctx context.Context, arg CreatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
 	DeleteAsset(ctx context.Context, arg DeleteAssetParams) error
 	DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error
 	DeletePBranch(ctx context.Context, arg DeletePBranchParams) error
 	DeletePCategory(ctx context.Context, arg DeletePCategoryParams) error
 	DeletePOrganization(ctx context.Context, arg DeletePOrganizationParams) error
 	DeletePortfolio(ctx context.Context, id string) error
+	DeletePortfolioCategory(ctx context.Context, id string) error
 	GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error)
 	GetEQAdvisorByID(ctx context.Context, id string) (HamonixBusinessEqAdvisor, error)
 	GetEQBranchByID(ctx context.Context, id string) (HamonixBusinessEqBranch, error)
 	GetEQOrganizationByID(ctx context.Context, id string) (HamonixBusinessEqOrganization, error)
 	GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error)
 	GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error)
+	GetPCategoryByCategoryId(ctx context.Context, categoryID pgtype.Text) ([]HamonixBusinessPCategory, error)
 	GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error)
 	GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error)
+	GetPortfolioCategoryById(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error)
 	UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error)
 	UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error)
 	UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error)
 	UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error)
 	UpdatePOrganization(ctx context.Context, arg UpdatePOrganizationParams) (HamonixBusinessPOrganization, error)
 	UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams) (HamonixBusinessPortfolio, error)
+	UpdatePortfolioCategory(ctx context.Context, arg UpdatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
 }
 
 var _ Querier = (*Queries)(nil)

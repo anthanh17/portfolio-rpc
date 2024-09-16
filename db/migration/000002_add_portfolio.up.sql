@@ -31,7 +31,7 @@ CREATE TABLE "hamonix_business"."ticker_prices" (
 );
 
 CREATE TABLE "hamonix_business"."portfolio_categories" (
-  "id" bigserial PRIMARY KEY,
+  "id" varchar PRIMARY KEY,
   "name" varchar NOT NULL,
   "description" varchar,
   "created_at" timestamptz NOT NULL DEFAULT (now()),

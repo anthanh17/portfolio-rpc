@@ -16,6 +16,10 @@ type Store interface {
 	CreatePortfolioTx(ctx context.Context, arg CreatePortfolioTxParams) (CreatePortfolioTxResult, error)
 	UpdatePortfolioTx(ctx context.Context, arg UpdatePortfolioTxParams) (UpdatePortfolioTxResult, error)
 	DeletePortfolioTx(ctx context.Context, arg DeletePortfolioTxParams) (DeletePortfolioTxResult, error)
+
+	CreatePortfolioCategoryTx(ctx context.Context, arg CreatePortfolioCategoryTxParams) (CreatePortfolioCategoryTxResult, error)
+	UpdatePortfolioCategoryTx(ctx context.Context, arg UpdatePortfolioCategoryTxParams) (UpdatePortfolioCategoryTxResult, error)
+	DeletePortfolioCategoryTx(ctx context.Context, arg DeletePortfolioCategoryTxParams) (DeletePortfolioCategoryTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
