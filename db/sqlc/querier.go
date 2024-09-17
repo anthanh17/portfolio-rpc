@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CountProfilesInCategory(ctx context.Context, categoryID pgtype.Text) (int64, error)
 	CreateAsset(ctx context.Context, arg CreateAssetParams) (HamonixBusinessAsset, error)
 	CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) (HamonixBusinessPAdvisor, error)
 	CreatePBranch(ctx context.Context, arg CreatePBranchParams) (HamonixBusinessPBranch, error)
@@ -18,6 +19,7 @@ type Querier interface {
 	CreatePOrganization(ctx context.Context, arg CreatePOrganizationParams) (HamonixBusinessPOrganization, error)
 	CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error)
 	CreatePortfolioCategory(ctx context.Context, arg CreatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
+	CreateUCategory(ctx context.Context, arg CreateUCategoryParams) (HamonixBusinessUCategory, error)
 	DeleteAsset(ctx context.Context, arg DeleteAssetParams) error
 	DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error
 	DeletePBranch(ctx context.Context, arg DeletePBranchParams) error
@@ -26,6 +28,7 @@ type Querier interface {
 	DeletePortfolio(ctx context.Context, id string) error
 	DeletePortfolioCategory(ctx context.Context, id string) error
 	GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error)
+	GetCategoryInfo(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error)
 	GetEQAdvisorByID(ctx context.Context, id string) (HamonixBusinessEqAdvisor, error)
 	GetEQBranchByID(ctx context.Context, id string) (HamonixBusinessEqBranch, error)
 	GetEQOrganizationByID(ctx context.Context, id string) (HamonixBusinessEqOrganization, error)
@@ -35,6 +38,8 @@ type Querier interface {
 	GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error)
 	GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error)
 	GetPortfolioCategoryById(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error)
+	GetProfilesByPortfolioId(ctx context.Context, id string) (HamonixBusinessPortfolio, error)
+	GetUCategoryByUserId(ctx context.Context, userID string) ([]HamonixBusinessUCategory, error)
 	UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error)
 	UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error)
 	UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error)

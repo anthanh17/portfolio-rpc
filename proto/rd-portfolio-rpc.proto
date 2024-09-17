@@ -80,6 +80,8 @@ message CreatePortfolioProfileRequest {
   repeated string advisor_id = 5;
   repeated PortfolioAsset assets = 6;
   string privacy = 7;
+  string author_id = 8;
+  string user_id = 9;
 }
 
 message CreatePortfolioProfileResponse {
@@ -174,8 +176,9 @@ message GetProfileByUserIDResponse {
 }
 
 message CreateCategoryRequest {
-  string name = 1;
-  repeated string profile_ids = 2;
+  string user_id = 1;
+  string name = 2;
+  repeated string profile_ids = 3;
 }
 
 message CreateCategoryResponse {
@@ -201,6 +204,35 @@ message DeleteCategoryResponse {
   bool status = 1;
 }
 
+message GetCategoryByUserIDRequest {
+  string user_id = 1;
+  uint64 page = 2;
+  uint64 page_size = 3;
+}
+
+message CategoryData {
+  string id = 1;
+  string name = 2;
+  uint64 number_profile = 3;
+  uint64 created_at = 4;
+  uint64 updated_at = 5;
+}
+
+message GetCategoryByUserIDResponse {
+  repeated CategoryData data = 1;
+  uint64 current = 2;
+  uint64 total = 3;
+}
+
+message RemovePortfolioProfileInCategoryRequest {
+  string categogy_id = 1;
+  string profile_id = 2;
+}
+
+message RemovePortfolioProfileInCategoryResponse {
+  bool status = 1;
+}
+
 service RdPortfolioRpc {
   rpc Ping(Request) returns(Response);
   // Portfolio optimization
@@ -221,4 +253,32 @@ service RdPortfolioRpc {
   rpc CreateCategory (CreateCategoryRequest) returns (CreateCategoryResponse) {}
   rpc UpdateCategory (UpdateCategoryRequest) returns (UpdateCategoryResponse) {}
   rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {}
+  rpc GetCategoryByUserID (GetCategoryByUserIDRequest) returns (GetCategoryByUserIDResponse) {}
+  rpc RemovePortfolioProfileInCategory (RemovePortfolioProfileInCategoryRequest) returns (RemovePortfolioProfileInCategoryResponse) {}
+  rpc GetDetailCategogy (GetDetailCategogyRequest) returns (GetDetailCategogyResponse) {}
+}
+
+message GetDetailCategogyRequest {
+  string categogy_id = 1;
+  uint64 page = 2;
+  uint64 page_size = 3;
+}
+
+message TCProfile {
+  string id = 1;
+  string name = 2;
+  TProfileValue charts = 3;
+  string privacy = 4;
+  string author_id = 5;
+  uint64 total_return = 6;
+  uint64 created_at = 7;
+  uint64 updated_at = 8;
+}
+
+message GetDetailCategogyResponse {
+  string id = 1;
+  string name = 2;
+  repeated TCProfile profiles = 3;
+  uint64 current = 4;
+  uint64 total = 5;
 }

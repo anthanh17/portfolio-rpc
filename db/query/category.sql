@@ -23,3 +23,24 @@ WHERE id = $1;
 -- name: GetPCategoryByCategoryId :many
 SELECT * FROM hamonix_business.p_categories
 WHERE category_id = $1;
+
+-- name: CreateUCategory :one
+INSERT INTO hamonix_business.u_categories (
+  category_id,
+  user_id
+) VALUES (
+  $1, $2
+) RETURNING *;
+
+-- name: GetUCategoryByUserId :many
+SELECT * FROM hamonix_business.u_categories
+WHERE user_id = $1;
+
+-- name: CountProfilesInCategory :one
+SELECT COUNT(portfolio_id)
+FROM hamonix_business.p_categories
+WHERE category_id = $1;
+
+-- name: GetCategoryInfo :one
+SELECT * FROM hamonix_business.portfolio_categories
+WHERE id = $1 LIMIT 1;

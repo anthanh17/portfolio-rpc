@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countProfilesInCategory = `-- name: CountProfilesInCategory :one
+SELECT COUNT(portfolio_id)
+FROM hamonix_business.p_categories
+WHERE category_id = $1
+`
+
+func (q *Queries) CountProfilesInCategory(ctx context.Context, categoryID pgtype.Text) (int64, error) {
+	row := q.db.QueryRow(ctx, countProfilesInCategory, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPortfolioCategory = `-- name: CreatePortfolioCategory :one
 INSERT INTO hamonix_business.portfolio_categories (
     id,
@@ -40,6 +53,27 @@ func (q *Queries) CreatePortfolioCategory(ctx context.Context, arg CreatePortfol
 	return i, err
 }
 
+const createUCategory = `-- name: CreateUCategory :one
+INSERT INTO hamonix_business.u_categories (
+  category_id,
+  user_id
+) VALUES (
+  $1, $2
+) RETURNING id, category_id, user_id
+`
+
+type CreateUCategoryParams struct {
+	CategoryID pgtype.Text `json:"category_id"`
+	UserID     string      `json:"user_id"`
+}
+
+func (q *Queries) CreateUCategory(ctx context.Context, arg CreateUCategoryParams) (HamonixBusinessUCategory, error) {
+	row := q.db.QueryRow(ctx, createUCategory, arg.CategoryID, arg.UserID)
+	var i HamonixBusinessUCategory
+	err := row.Scan(&i.ID, &i.CategoryID, &i.UserID)
+	return i, err
+}
+
 const deletePortfolioCategory = `-- name: DeletePortfolioCategory :exec
 DELETE FROM hamonix_business.portfolio_categories
 WHERE id = $1
@@ -50,8 +84,26 @@ func (q *Queries) DeletePortfolioCategory(ctx context.Context, id string) error 
 	return err
 }
 
+const getCategoryInfo = `-- name: GetCategoryInfo :one
+SELECT id, name, description, created_at, updated_at FROM hamonix_business.portfolio_categories
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetCategoryInfo(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error) {
+	row := q.db.QueryRow(ctx, getCategoryInfo, id)
+	var i HamonixBusinessPortfolioCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPCategoryByCategoryId = `-- name: GetPCategoryByCategoryId :many
-SELECT portfolio_id, category_id FROM hamonix_business.p_categories
+SELECT id, portfolio_id, category_id FROM hamonix_business.p_categories
 WHERE category_id = $1
 `
 
@@ -64,7 +116,7 @@ func (q *Queries) GetPCategoryByCategoryId(ctx context.Context, categoryID pgtyp
 	items := []HamonixBusinessPCategory{}
 	for rows.Next() {
 		var i HamonixBusinessPCategory
-		if err := rows.Scan(&i.PortfolioID, &i.CategoryID); err != nil {
+		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.CategoryID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -91,6 +143,31 @@ func (q *Queries) GetPortfolioCategoryById(ctx context.Context, id string) (Hamo
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getUCategoryByUserId = `-- name: GetUCategoryByUserId :many
+SELECT id, category_id, user_id FROM hamonix_business.u_categories
+WHERE user_id = $1
+`
+
+func (q *Queries) GetUCategoryByUserId(ctx context.Context, userID string) ([]HamonixBusinessUCategory, error) {
+	rows, err := q.db.Query(ctx, getUCategoryByUserId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HamonixBusinessUCategory{}
+	for rows.Next() {
+		var i HamonixBusinessUCategory
+		if err := rows.Scan(&i.ID, &i.CategoryID, &i.UserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updatePortfolioCategory = `-- name: UpdatePortfolioCategory :one

@@ -5,55 +5,10 @@
 package db
 
 import (
-	"database/sql/driver"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-type PortfolioPrivacy string
-
-const (
-	PortfolioPrivacyPublic    PortfolioPrivacy = "public"
-	PortfolioPrivacyPrivate   PortfolioPrivacy = "private"
-	PortfolioPrivacyProtected PortfolioPrivacy = "protected"
-)
-
-func (e *PortfolioPrivacy) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = PortfolioPrivacy(s)
-	case string:
-		*e = PortfolioPrivacy(s)
-	default:
-		return fmt.Errorf("unsupported scan type for PortfolioPrivacy: %T", src)
-	}
-	return nil
-}
-
-type NullPortfolioPrivacy struct {
-	PortfolioPrivacy PortfolioPrivacy `json:"portfolio_privacy"`
-	Valid            bool             `json:"valid"` // Valid is true if PortfolioPrivacy is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullPortfolioPrivacy) Scan(value interface{}) error {
-	if value == nil {
-		ns.PortfolioPrivacy, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.PortfolioPrivacy.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullPortfolioPrivacy) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.PortfolioPrivacy), nil
-}
 
 type HamonixBusinessAsset struct {
 	ID          int64   `json:"id"`
@@ -103,31 +58,36 @@ type HamonixBusinessEqWhitelable struct {
 }
 
 type HamonixBusinessPAdvisor struct {
+	ID          int64       `json:"id"`
 	PortfolioID string      `json:"portfolio_id"`
 	AdvisorID   pgtype.Text `json:"advisor_id"`
 }
 
 type HamonixBusinessPBranch struct {
+	ID          int64       `json:"id"`
 	PortfolioID string      `json:"portfolio_id"`
 	BranchID    pgtype.Text `json:"branch_id"`
 }
 
 type HamonixBusinessPCategory struct {
+	ID          int64       `json:"id"`
 	PortfolioID string      `json:"portfolio_id"`
 	CategoryID  pgtype.Text `json:"category_id"`
 }
 
 type HamonixBusinessPOrganization struct {
+	ID             int64       `json:"id"`
 	PortfolioID    string      `json:"portfolio_id"`
 	OrganizationID pgtype.Text `json:"organization_id"`
 }
 
 type HamonixBusinessPortfolio struct {
-	ID        string           `json:"id"`
-	Name      string           `json:"name"`
-	Privacy   PortfolioPrivacy `json:"privacy"`
-	CreatedAt time.Time        `json:"created_at"`
-	UpdatedAt time.Time        `json:"updated_at"`
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Privacy   string    `json:"privacy"`
+	AuthorID  string    `json:"author_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type HamonixBusinessPortfolioCategory struct {
@@ -155,4 +115,17 @@ type HamonixBusinessTickerPrice struct {
 	Low      float64     `json:"low"`
 	Close    float64     `json:"close"`
 	Date     pgtype.Date `json:"date"`
+}
+
+type HamonixBusinessUCategory struct {
+	ID         int64       `json:"id"`
+	CategoryID pgtype.Text `json:"category_id"`
+	UserID     string      `json:"user_id"`
+}
+
+type HamonixBusinessUser struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

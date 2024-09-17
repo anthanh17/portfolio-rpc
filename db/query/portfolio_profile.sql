@@ -2,9 +2,10 @@
 INSERT INTO hamonix_business.portfolios (
   id,
   name,
-  privacy
+  privacy,
+  author_id
 ) VALUES (
-  $1, $2, $3
+  $1, $2, $3, $4
 ) RETURNING *;
 
 -- name: CreateAsset :one
@@ -136,3 +137,7 @@ WHERE portfolio_id = $1;
 -- name: GetPAdvisorByPortfolioId :many
 SELECT * FROM hamonix_business.p_advisors
 WHERE portfolio_id = $1;
+
+-- name: GetProfilesByPortfolioId :one
+SELECT * FROM hamonix_business.portfolios
+WHERE id = $1 LIMIT 1;

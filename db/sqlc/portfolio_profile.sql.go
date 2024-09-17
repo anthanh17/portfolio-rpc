@@ -53,7 +53,7 @@ INSERT INTO hamonix_business.p_advisors (
   advisor_id
 ) VALUES (
   $1, $2
-) RETURNING portfolio_id, advisor_id
+) RETURNING id, portfolio_id, advisor_id
 `
 
 type CreatePAdvisorParams struct {
@@ -64,7 +64,7 @@ type CreatePAdvisorParams struct {
 func (q *Queries) CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) (HamonixBusinessPAdvisor, error) {
 	row := q.db.QueryRow(ctx, createPAdvisor, arg.PortfolioID, arg.AdvisorID)
 	var i HamonixBusinessPAdvisor
-	err := row.Scan(&i.PortfolioID, &i.AdvisorID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.AdvisorID)
 	return i, err
 }
 
@@ -74,7 +74,7 @@ INSERT INTO hamonix_business.p_branches (
   branch_id
 ) VALUES (
   $1, $2
-) RETURNING portfolio_id, branch_id
+) RETURNING id, portfolio_id, branch_id
 `
 
 type CreatePBranchParams struct {
@@ -85,7 +85,7 @@ type CreatePBranchParams struct {
 func (q *Queries) CreatePBranch(ctx context.Context, arg CreatePBranchParams) (HamonixBusinessPBranch, error) {
 	row := q.db.QueryRow(ctx, createPBranch, arg.PortfolioID, arg.BranchID)
 	var i HamonixBusinessPBranch
-	err := row.Scan(&i.PortfolioID, &i.BranchID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.BranchID)
 	return i, err
 }
 
@@ -95,7 +95,7 @@ INSERT INTO hamonix_business.p_categories (
   category_id
 ) VALUES (
   $1, $2
-) RETURNING portfolio_id, category_id
+) RETURNING id, portfolio_id, category_id
 `
 
 type CreatePCategoryParams struct {
@@ -106,7 +106,7 @@ type CreatePCategoryParams struct {
 func (q *Queries) CreatePCategory(ctx context.Context, arg CreatePCategoryParams) (HamonixBusinessPCategory, error) {
 	row := q.db.QueryRow(ctx, createPCategory, arg.PortfolioID, arg.CategoryID)
 	var i HamonixBusinessPCategory
-	err := row.Scan(&i.PortfolioID, &i.CategoryID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.CategoryID)
 	return i, err
 }
 
@@ -116,7 +116,7 @@ INSERT INTO hamonix_business.p_organizations (
   organization_id
 ) VALUES (
   $1, $2
-) RETURNING portfolio_id, organization_id
+) RETURNING id, portfolio_id, organization_id
 `
 
 type CreatePOrganizationParams struct {
@@ -127,7 +127,7 @@ type CreatePOrganizationParams struct {
 func (q *Queries) CreatePOrganization(ctx context.Context, arg CreatePOrganizationParams) (HamonixBusinessPOrganization, error) {
 	row := q.db.QueryRow(ctx, createPOrganization, arg.PortfolioID, arg.OrganizationID)
 	var i HamonixBusinessPOrganization
-	err := row.Scan(&i.PortfolioID, &i.OrganizationID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.OrganizationID)
 	return i, err
 }
 
@@ -135,25 +135,33 @@ const createPortfolio = `-- name: CreatePortfolio :one
 INSERT INTO hamonix_business.portfolios (
   id,
   name,
-  privacy
+  privacy,
+  author_id
 ) VALUES (
-  $1, $2, $3
-) RETURNING id, name, privacy, created_at, updated_at
+  $1, $2, $3, $4
+) RETURNING id, name, privacy, author_id, created_at, updated_at
 `
 
 type CreatePortfolioParams struct {
-	ID      string           `json:"id"`
-	Name    string           `json:"name"`
-	Privacy PortfolioPrivacy `json:"privacy"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Privacy  string `json:"privacy"`
+	AuthorID string `json:"author_id"`
 }
 
 func (q *Queries) CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error) {
-	row := q.db.QueryRow(ctx, createPortfolio, arg.ID, arg.Name, arg.Privacy)
+	row := q.db.QueryRow(ctx, createPortfolio,
+		arg.ID,
+		arg.Name,
+		arg.Privacy,
+		arg.AuthorID,
+	)
 	var i HamonixBusinessPortfolio
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Privacy,
+		&i.AuthorID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -277,7 +285,7 @@ func (q *Queries) GetAssetsByPortfolioId(ctx context.Context, portfolioID string
 }
 
 const getPAdvisorByPortfolioId = `-- name: GetPAdvisorByPortfolioId :many
-SELECT portfolio_id, advisor_id FROM hamonix_business.p_advisors
+SELECT id, portfolio_id, advisor_id FROM hamonix_business.p_advisors
 WHERE portfolio_id = $1
 `
 
@@ -290,7 +298,7 @@ func (q *Queries) GetPAdvisorByPortfolioId(ctx context.Context, portfolioID stri
 	items := []HamonixBusinessPAdvisor{}
 	for rows.Next() {
 		var i HamonixBusinessPAdvisor
-		if err := rows.Scan(&i.PortfolioID, &i.AdvisorID); err != nil {
+		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.AdvisorID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -302,7 +310,7 @@ func (q *Queries) GetPAdvisorByPortfolioId(ctx context.Context, portfolioID stri
 }
 
 const getPBranchByPortfolioId = `-- name: GetPBranchByPortfolioId :many
-SELECT portfolio_id, branch_id FROM hamonix_business.p_branches
+SELECT id, portfolio_id, branch_id FROM hamonix_business.p_branches
 WHERE portfolio_id = $1
 `
 
@@ -315,7 +323,7 @@ func (q *Queries) GetPBranchByPortfolioId(ctx context.Context, portfolioID strin
 	items := []HamonixBusinessPBranch{}
 	for rows.Next() {
 		var i HamonixBusinessPBranch
-		if err := rows.Scan(&i.PortfolioID, &i.BranchID); err != nil {
+		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.BranchID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -327,7 +335,7 @@ func (q *Queries) GetPBranchByPortfolioId(ctx context.Context, portfolioID strin
 }
 
 const getPCategoryByPortfolioId = `-- name: GetPCategoryByPortfolioId :many
-SELECT portfolio_id, category_id FROM hamonix_business.p_categories
+SELECT id, portfolio_id, category_id FROM hamonix_business.p_categories
 WHERE portfolio_id = $1
 `
 
@@ -340,7 +348,7 @@ func (q *Queries) GetPCategoryByPortfolioId(ctx context.Context, portfolioID str
 	items := []HamonixBusinessPCategory{}
 	for rows.Next() {
 		var i HamonixBusinessPCategory
-		if err := rows.Scan(&i.PortfolioID, &i.CategoryID); err != nil {
+		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.CategoryID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -352,7 +360,7 @@ func (q *Queries) GetPCategoryByPortfolioId(ctx context.Context, portfolioID str
 }
 
 const getPOrganizationByPortfolioId = `-- name: GetPOrganizationByPortfolioId :many
-SELECT portfolio_id, organization_id FROM hamonix_business.p_organizations
+SELECT id, portfolio_id, organization_id FROM hamonix_business.p_organizations
 WHERE portfolio_id = $1
 `
 
@@ -365,7 +373,7 @@ func (q *Queries) GetPOrganizationByPortfolioId(ctx context.Context, portfolioID
 	items := []HamonixBusinessPOrganization{}
 	for rows.Next() {
 		var i HamonixBusinessPOrganization
-		if err := rows.Scan(&i.PortfolioID, &i.OrganizationID); err != nil {
+		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.OrganizationID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -374,6 +382,25 @@ func (q *Queries) GetPOrganizationByPortfolioId(ctx context.Context, portfolioID
 		return nil, err
 	}
 	return items, nil
+}
+
+const getProfilesByPortfolioId = `-- name: GetProfilesByPortfolioId :one
+SELECT id, name, privacy, author_id, created_at, updated_at FROM hamonix_business.portfolios
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetProfilesByPortfolioId(ctx context.Context, id string) (HamonixBusinessPortfolio, error) {
+	row := q.db.QueryRow(ctx, getProfilesByPortfolioId, id)
+	var i HamonixBusinessPortfolio
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateAsset = `-- name: UpdateAsset :one
@@ -415,7 +442,7 @@ UPDATE hamonix_business.p_advisors
 SET
   advisor_id = $3
 WHERE portfolio_id = $1 AND advisor_id = $2
-RETURNING portfolio_id, advisor_id
+RETURNING id, portfolio_id, advisor_id
 `
 
 type UpdatePAdvisorParams struct {
@@ -427,7 +454,7 @@ type UpdatePAdvisorParams struct {
 func (q *Queries) UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error) {
 	row := q.db.QueryRow(ctx, updatePAdvisor, arg.PortfolioID, arg.AdvisorID, arg.AdvisorID_2)
 	var i HamonixBusinessPAdvisor
-	err := row.Scan(&i.PortfolioID, &i.AdvisorID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.AdvisorID)
 	return i, err
 }
 
@@ -436,7 +463,7 @@ UPDATE hamonix_business.p_branches
 SET
   branch_id = $3
 WHERE portfolio_id = $1 AND branch_id = $2
-RETURNING portfolio_id, branch_id
+RETURNING id, portfolio_id, branch_id
 `
 
 type UpdatePBranchParams struct {
@@ -448,7 +475,7 @@ type UpdatePBranchParams struct {
 func (q *Queries) UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error) {
 	row := q.db.QueryRow(ctx, updatePBranch, arg.PortfolioID, arg.BranchID, arg.BranchID_2)
 	var i HamonixBusinessPBranch
-	err := row.Scan(&i.PortfolioID, &i.BranchID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.BranchID)
 	return i, err
 }
 
@@ -457,7 +484,7 @@ UPDATE hamonix_business.p_categories
 SET
   category_id = $3
 WHERE portfolio_id = $1 AND category_id = $2
-RETURNING portfolio_id, category_id
+RETURNING id, portfolio_id, category_id
 `
 
 type UpdatePCategoryParams struct {
@@ -469,7 +496,7 @@ type UpdatePCategoryParams struct {
 func (q *Queries) UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error) {
 	row := q.db.QueryRow(ctx, updatePCategory, arg.PortfolioID, arg.CategoryID, arg.CategoryID_2)
 	var i HamonixBusinessPCategory
-	err := row.Scan(&i.PortfolioID, &i.CategoryID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.CategoryID)
 	return i, err
 }
 
@@ -478,7 +505,7 @@ UPDATE hamonix_business.p_organizations
 SET
   organization_id = $3
 WHERE portfolio_id = $1 AND organization_id = $2
-RETURNING portfolio_id, organization_id
+RETURNING id, portfolio_id, organization_id
 `
 
 type UpdatePOrganizationParams struct {
@@ -490,7 +517,7 @@ type UpdatePOrganizationParams struct {
 func (q *Queries) UpdatePOrganization(ctx context.Context, arg UpdatePOrganizationParams) (HamonixBusinessPOrganization, error) {
 	row := q.db.QueryRow(ctx, updatePOrganization, arg.PortfolioID, arg.OrganizationID, arg.OrganizationID_2)
 	var i HamonixBusinessPOrganization
-	err := row.Scan(&i.PortfolioID, &i.OrganizationID)
+	err := row.Scan(&i.ID, &i.PortfolioID, &i.OrganizationID)
 	return i, err
 }
 
@@ -500,13 +527,13 @@ SET
   name = $2,
   privacy = $3
 WHERE id = $1
-RETURNING id, name, privacy, created_at, updated_at
+RETURNING id, name, privacy, author_id, created_at, updated_at
 `
 
 type UpdatePortfolioParams struct {
-	ID      string           `json:"id"`
-	Name    string           `json:"name"`
-	Privacy PortfolioPrivacy `json:"privacy"`
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Privacy string `json:"privacy"`
 }
 
 func (q *Queries) UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams) (HamonixBusinessPortfolio, error) {
@@ -516,6 +543,7 @@ func (q *Queries) UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams
 		&i.ID,
 		&i.Name,
 		&i.Privacy,
+		&i.AuthorID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

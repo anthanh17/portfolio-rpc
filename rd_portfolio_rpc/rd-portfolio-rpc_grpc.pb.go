@@ -19,20 +19,23 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RdPortfolioRpc_Ping_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/Ping"
-	RdPortfolioRpc_GetOpt_FullMethodName                 = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpt"
-	RdPortfolioRpc_CreateOpt_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/CreateOpt"
-	RdPortfolioRpc_GetOpts_FullMethodName                = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpts"
-	RdPortfolioRpc_CreatePortfolioProfile_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/CreatePortfolioProfile"
-	RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/UpdatePortfolioProfile"
-	RdPortfolioRpc_DeletePortfolioProfile_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/DeletePortfolioProfile"
-	RdPortfolioRpc_GetBranchByID_FullMethodName          = "/rd_portfolio_rpc.RdPortfolioRpc/GetBranchByID"
-	RdPortfolioRpc_GetOrganizationByID_FullMethodName    = "/rd_portfolio_rpc.RdPortfolioRpc/GetOrganizationByID"
-	RdPortfolioRpc_GetAdvisorByID_FullMethodName         = "/rd_portfolio_rpc.RdPortfolioRpc/GetAdvisorByID"
-	RdPortfolioRpc_GetProfileByUserID_FullMethodName     = "/rd_portfolio_rpc.RdPortfolioRpc/GetProfileByUserID"
-	RdPortfolioRpc_CreateCategory_FullMethodName         = "/rd_portfolio_rpc.RdPortfolioRpc/CreateCategory"
-	RdPortfolioRpc_UpdateCategory_FullMethodName         = "/rd_portfolio_rpc.RdPortfolioRpc/UpdateCategory"
-	RdPortfolioRpc_DeleteCategory_FullMethodName         = "/rd_portfolio_rpc.RdPortfolioRpc/DeleteCategory"
+	RdPortfolioRpc_Ping_FullMethodName                             = "/rd_portfolio_rpc.RdPortfolioRpc/Ping"
+	RdPortfolioRpc_GetOpt_FullMethodName                           = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpt"
+	RdPortfolioRpc_CreateOpt_FullMethodName                        = "/rd_portfolio_rpc.RdPortfolioRpc/CreateOpt"
+	RdPortfolioRpc_GetOpts_FullMethodName                          = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpts"
+	RdPortfolioRpc_CreatePortfolioProfile_FullMethodName           = "/rd_portfolio_rpc.RdPortfolioRpc/CreatePortfolioProfile"
+	RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName           = "/rd_portfolio_rpc.RdPortfolioRpc/UpdatePortfolioProfile"
+	RdPortfolioRpc_DeletePortfolioProfile_FullMethodName           = "/rd_portfolio_rpc.RdPortfolioRpc/DeletePortfolioProfile"
+	RdPortfolioRpc_GetBranchByID_FullMethodName                    = "/rd_portfolio_rpc.RdPortfolioRpc/GetBranchByID"
+	RdPortfolioRpc_GetOrganizationByID_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/GetOrganizationByID"
+	RdPortfolioRpc_GetAdvisorByID_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/GetAdvisorByID"
+	RdPortfolioRpc_GetProfileByUserID_FullMethodName               = "/rd_portfolio_rpc.RdPortfolioRpc/GetProfileByUserID"
+	RdPortfolioRpc_CreateCategory_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/CreateCategory"
+	RdPortfolioRpc_UpdateCategory_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/UpdateCategory"
+	RdPortfolioRpc_DeleteCategory_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/DeleteCategory"
+	RdPortfolioRpc_GetCategoryByUserID_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/GetCategoryByUserID"
+	RdPortfolioRpc_RemovePortfolioProfileInCategory_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/RemovePortfolioProfileInCategory"
+	RdPortfolioRpc_GetDetailCategogy_FullMethodName                = "/rd_portfolio_rpc.RdPortfolioRpc/GetDetailCategogy"
 )
 
 // RdPortfolioRpcClient is the client API for RdPortfolioRpc service.
@@ -54,6 +57,9 @@ type RdPortfolioRpcClient interface {
 	CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CreateCategoryResponse, error)
 	UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*UpdateCategoryResponse, error)
 	DeleteCategory(ctx context.Context, in *DeleteCategoryRequest, opts ...grpc.CallOption) (*DeleteCategoryResponse, error)
+	GetCategoryByUserID(ctx context.Context, in *GetCategoryByUserIDRequest, opts ...grpc.CallOption) (*GetCategoryByUserIDResponse, error)
+	RemovePortfolioProfileInCategory(ctx context.Context, in *RemovePortfolioProfileInCategoryRequest, opts ...grpc.CallOption) (*RemovePortfolioProfileInCategoryResponse, error)
+	GetDetailCategogy(ctx context.Context, in *GetDetailCategogyRequest, opts ...grpc.CallOption) (*GetDetailCategogyResponse, error)
 }
 
 type rdPortfolioRpcClient struct {
@@ -204,6 +210,36 @@ func (c *rdPortfolioRpcClient) DeleteCategory(ctx context.Context, in *DeleteCat
 	return out, nil
 }
 
+func (c *rdPortfolioRpcClient) GetCategoryByUserID(ctx context.Context, in *GetCategoryByUserIDRequest, opts ...grpc.CallOption) (*GetCategoryByUserIDResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCategoryByUserIDResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetCategoryByUserID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rdPortfolioRpcClient) RemovePortfolioProfileInCategory(ctx context.Context, in *RemovePortfolioProfileInCategoryRequest, opts ...grpc.CallOption) (*RemovePortfolioProfileInCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemovePortfolioProfileInCategoryResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_RemovePortfolioProfileInCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rdPortfolioRpcClient) GetDetailCategogy(ctx context.Context, in *GetDetailCategogyRequest, opts ...grpc.CallOption) (*GetDetailCategogyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDetailCategogyResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetDetailCategogy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RdPortfolioRpcServer is the server API for RdPortfolioRpc service.
 // All implementations must embed UnimplementedRdPortfolioRpcServer
 // for forward compatibility.
@@ -223,6 +259,9 @@ type RdPortfolioRpcServer interface {
 	CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error)
 	UpdateCategory(context.Context, *UpdateCategoryRequest) (*UpdateCategoryResponse, error)
 	DeleteCategory(context.Context, *DeleteCategoryRequest) (*DeleteCategoryResponse, error)
+	GetCategoryByUserID(context.Context, *GetCategoryByUserIDRequest) (*GetCategoryByUserIDResponse, error)
+	RemovePortfolioProfileInCategory(context.Context, *RemovePortfolioProfileInCategoryRequest) (*RemovePortfolioProfileInCategoryResponse, error)
+	GetDetailCategogy(context.Context, *GetDetailCategogyRequest) (*GetDetailCategogyResponse, error)
 	mustEmbedUnimplementedRdPortfolioRpcServer()
 }
 
@@ -274,6 +313,15 @@ func (UnimplementedRdPortfolioRpcServer) UpdateCategory(context.Context, *Update
 }
 func (UnimplementedRdPortfolioRpcServer) DeleteCategory(context.Context, *DeleteCategoryRequest) (*DeleteCategoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCategory not implemented")
+}
+func (UnimplementedRdPortfolioRpcServer) GetCategoryByUserID(context.Context, *GetCategoryByUserIDRequest) (*GetCategoryByUserIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCategoryByUserID not implemented")
+}
+func (UnimplementedRdPortfolioRpcServer) RemovePortfolioProfileInCategory(context.Context, *RemovePortfolioProfileInCategoryRequest) (*RemovePortfolioProfileInCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemovePortfolioProfileInCategory not implemented")
+}
+func (UnimplementedRdPortfolioRpcServer) GetDetailCategogy(context.Context, *GetDetailCategogyRequest) (*GetDetailCategogyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDetailCategogy not implemented")
 }
 func (UnimplementedRdPortfolioRpcServer) mustEmbedUnimplementedRdPortfolioRpcServer() {}
 func (UnimplementedRdPortfolioRpcServer) testEmbeddedByValue()                        {}
@@ -548,6 +596,60 @@ func _RdPortfolioRpc_DeleteCategory_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RdPortfolioRpc_GetCategoryByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCategoryByUserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RdPortfolioRpcServer).GetCategoryByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RdPortfolioRpc_GetCategoryByUserID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RdPortfolioRpcServer).GetCategoryByUserID(ctx, req.(*GetCategoryByUserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RdPortfolioRpc_RemovePortfolioProfileInCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemovePortfolioProfileInCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RdPortfolioRpcServer).RemovePortfolioProfileInCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RdPortfolioRpc_RemovePortfolioProfileInCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RdPortfolioRpcServer).RemovePortfolioProfileInCategory(ctx, req.(*RemovePortfolioProfileInCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RdPortfolioRpc_GetDetailCategogy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDetailCategogyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RdPortfolioRpcServer).GetDetailCategogy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RdPortfolioRpc_GetDetailCategogy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RdPortfolioRpcServer).GetDetailCategogy(ctx, req.(*GetDetailCategogyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RdPortfolioRpc_ServiceDesc is the grpc.ServiceDesc for RdPortfolioRpc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -610,6 +712,18 @@ var RdPortfolioRpc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteCategory",
 			Handler:    _RdPortfolioRpc_DeleteCategory_Handler,
+		},
+		{
+			MethodName: "GetCategoryByUserID",
+			Handler:    _RdPortfolioRpc_GetCategoryByUserID_Handler,
+		},
+		{
+			MethodName: "RemovePortfolioProfileInCategory",
+			Handler:    _RdPortfolioRpc_RemovePortfolioProfileInCategory_Handler,
+		},
+		{
+			MethodName: "GetDetailCategogy",
+			Handler:    _RdPortfolioRpc_GetDetailCategogy_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

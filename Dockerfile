@@ -1,19 +1,28 @@
-# Build stage
 FROM golang:alpine AS builder
+LABEL stage=gobuilder
 
-WORKDIR /app
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+
+WORKDIR /build
+
+ADD go.mod .
+ADD go.sum .
+RUN go mod download
 COPY . .
+COPY etc /rpc/etc
+# Build rpc with -s (inlining) -w (dead code elimination)
+RUN go build -ldflags="-s -w" -o /rpc/main .
 
-RUN go mod tidy
-RUN go build -o main .
 
-# Run stage
-FROM alpine:latest
+FROM alpine
 
-WORKDIR /app
+RUN apk update --no-cache && apk add --no-cache ca-certificates tzdata
 
-COPY --from=builder /app/main .
-COPY --from=builder /app/etc/rd-ticker.yaml ./etc/
+WORKDIR /rpc
+COPY --from=builder /rpc /rpc
+COPY --from=builder /rpc/etc /rpc/etc
 
 EXPOSE 9090
+
 CMD ["./main"]
