@@ -1,17 +1,1 @@
 DROP TABLE IF EXISTS hamonix_business.tickers;
-DROP TABLE IF EXISTS hamonix_business.portfolios;
-DROP TABLE IF EXISTS hamonix_business.assets;
-DROP TABLE IF EXISTS hamonix_business.ticker_prices;
-DROP TABLE IF EXISTS hamonix_business.portfolio_categories;
-DROP TABLE IF EXISTS hamonix_business.p_categories;
-DROP TABLE IF EXISTS hamonix_business.p_branches;
-DROP TABLE IF EXISTS hamonix_business.p_advisors;
-DROP TABLE IF EXISTS hamonix_business.p_organizations;
-DROP TABLE IF EXISTS hamonix_business.eq_whitelables;
-DROP TABLE IF EXISTS hamonix_business.eq_backoffices;
-DROP TABLE IF EXISTS hamonix_business.eq_organizations;
-DROP TABLE IF EXISTS hamonix_business.eq_branchs;
-DROP TABLE IF EXISTS hamonix_business.eq_advisors;
-DROP TABLE IF EXISTS hamonix_business.eq_accounts;
-DROP TABLE IF EXISTS hamonix_business.users;
-DROP TABLE IF EXISTS hamonix_business.u_categories;
