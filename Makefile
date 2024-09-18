@@ -33,7 +33,7 @@ sqlc:
 
 # Start server
 server:
-	go run main.go
+	go run main.go -f ./etc/rdportfoliorpc.yaml
 
 proto:
 	rm -f rd_portfolio_rpc/*.go
