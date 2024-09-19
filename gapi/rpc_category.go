@@ -68,7 +68,10 @@ func (s *Server) UpdateCategory(ctx context.Context, in *rd_portfolio_rpc.Update
 	}
 
 	fmt.Printf("\n==> Updated categoryID: %s", txResult.CategoryID)
-	return &rd_portfolio_rpc.UpdateCategoryResponse{}, nil
+	return &rd_portfolio_rpc.UpdateCategoryResponse{
+		Name:       in.Name,
+		ProfileIds: in.ProfileIds,
+	}, nil
 }
 
 func (s *Server) DeleteCategory(ctx context.Context, in *rd_portfolio_rpc.DeleteCategoryRequest) (*rd_portfolio_rpc.DeleteCategoryResponse, error) {
@@ -125,36 +128,37 @@ func (s *Server) GetCategoryByUserID(ctx context.Context, in *rd_portfolio_rpc.G
 		})
 	}
 
-	pagingResults := paginate(data, int(in.Page), int(in.PageSize))
+	pagingResults := paginate(data, int(in.Page), int(in.Size))
 	// Calc totalPage
-	totalPage := int(math.Ceil(float64(len(data)) / float64(in.PageSize)))
+	total := len(data)
+	totalPage := int(math.Ceil(float64(total) / float64(in.Size)))
 
 	fmt.Printf("\n==> Get list category by user id: %s", in.UserId)
 	return &rd_portfolio_rpc.GetCategoryByUserIDResponse{
-		Data:    pagingResults,
-		Current: uint64(in.Page),
-		Total:   uint64(totalPage),
+		Data:        pagingResults,
+		Total:       uint64(total),
+		CurrentPage: uint64(in.Page),
+		TotalPage:   uint64(totalPage),
 	}, nil
 }
 
-// [BE] Remove portfolio profile in category api
+// Remove portfolio profile in category api
 func (s *Server) RemovePortfolioProfileInCategory(ctx context.Context, in *rd_portfolio_rpc.RemovePortfolioProfileInCategoryRequest) (*rd_portfolio_rpc.RemovePortfolioProfileInCategoryResponse, error) {
-	argPCategory := db.DeletePCategoryParams{
-		PortfolioID: in.ProfileId,
-		CategoryID: pgtype.Text{
-			String: in.CategogyId,
-			Valid:  true,
-		},
-	}
-	err := s.store.DeletePCategory(ctx, argPCategory)
-	if err != nil {
-		s.logger.Sugar().Infof("\ncannot DeletePCategory: %v\n", err)
-		return nil, status.Errorf(codes.Internal, "failed to delete portfolio category: %s", err)
+	arg := db.RemovePortfolioProfileInCategoryTxParams{
+		CategoryID:   in.CategogyId,
+		PortfolioIDs: in.ProfileIds,
 	}
 
-	fmt.Printf("\n==> Remove portfolio_profile_id: %s in category_id: %s", in.ProfileId, in.CategogyId)
+	// Add transaction - Remove portfolio profile in category
+	txResult, err := s.store.RemovePortfolioProfileInCategoryTx(ctx, arg)
+	if err != nil {
+		s.logger.Sugar().Infof("\ncannot RemovePortfolioProfileInCategoryTx: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to remove portfolio profile in category: %s", err)
+	}
+
+	fmt.Printf("\n==> Remove portfolio profile in category_id: %s", in.CategogyId)
 	return &rd_portfolio_rpc.RemovePortfolioProfileInCategoryResponse{
-		Status: true,
+		Status: txResult.Status,
 	}, nil
 }
 
@@ -198,16 +202,18 @@ func (s *Server) GetDetailCategogy(ctx context.Context, in *rd_portfolio_rpc.Get
 		}
 	}
 
-	pagingResults := paginate(profiles, int(in.Page), int(in.PageSize))
+	pagingResults := paginate(profiles, int(in.Page), int(in.Size))
 	// Calc totalPage
-	totalPage := int(math.Ceil(float64(len(profiles)) / float64(in.PageSize)))
+	total := len(profiles)
+	totalPage := int(math.Ceil(float64(total) / float64(in.Size)))
 
 	fmt.Printf("\n==> Get detail category_id: %s", in.CategogyId)
 	return &rd_portfolio_rpc.GetDetailCategogyResponse{
-		Id:       categoryInfo.ID,
-		Name:     categoryInfo.Name,
-		Profiles: pagingResults,
-		Current:  uint64(in.Page),
-		Total:    uint64(totalPage),
+		Id:          categoryInfo.ID,
+		Name:        categoryInfo.Name,
+		Profiles:    pagingResults,
+		Total:       uint64(total),
+		CurrentPage: uint64(in.Page),
+		TotalPage:   uint64(totalPage),
 	}, nil
 }

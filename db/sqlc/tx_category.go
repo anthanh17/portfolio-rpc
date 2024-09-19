@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -76,7 +77,7 @@ func (store *SQLStore) CreatePortfolioCategoryTx(ctx context.Context, arg Create
 
 // UPDATE
 type UpdatePortfolioCategoryTxParams struct {
-	CategoryID string `json:"category_id"`
+	CategoryID string   `json:"category_id"`
 	Name       string   `json:"name"`
 	ProfileIds []string `json:"profile_ids"`
 }
@@ -93,7 +94,7 @@ func (store *SQLStore) UpdatePortfolioCategoryTx(ctx context.Context, arg Update
 
 		// table: portfolio_categories
 		argPortfolioCategory := UpdatePortfolioCategoryParams{
-			ID: arg.CategoryID,
+			ID:   arg.CategoryID,
 			Name: arg.Name,
 		}
 
@@ -205,11 +206,70 @@ func (store *SQLStore) DeletePortfolioCategoryTx(ctx context.Context, arg Delete
 					return errors.New("error DeletePCategory " + err.Error())
 				}
 			}
-        }
+		}
 
 		return err
 	})
 
-	result.Status = true
+	if err != nil {
+		result.Status = true
+	}
+	return result, err
+}
+
+// Remove portfolio profile in category api
+type RemovePortfolioProfileInCategoryTxParams struct {
+	CategoryID   string   `json:"category_id"`
+	PortfolioIDs []string `json:"portfolio_ids"`
+}
+
+type RemovePortfolioProfileInCategoryTxResult struct {
+	Status bool `json:"status"`
+}
+
+func (store *SQLStore) RemovePortfolioProfileInCategoryTx(ctx context.Context, arg RemovePortfolioProfileInCategoryTxParams) (RemovePortfolioProfileInCategoryTxResult, error) {
+	var result RemovePortfolioProfileInCategoryTxResult
+	result.Status = false
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		errCh := make(chan error, len(arg.PortfolioIDs))
+
+		// Start goroutines for each portfolio ID
+		var wg sync.WaitGroup
+		for _, portfolioID := range arg.PortfolioIDs {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+
+				argPCategory := DeletePCategoryParams{
+					PortfolioID: portfolioID,
+					CategoryID: pgtype.Text{
+						String: arg.CategoryID,
+						Valid:  true,
+					},
+				}
+
+				err := q.DeletePCategory(ctx, argPCategory)
+				errCh <- err
+			}()
+		}
+
+		// Wait for all goroutines to finish
+		wg.Wait()
+		close(errCh)
+
+		// Collect and handle errors
+		for err := range errCh {
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		result.Status = true
+	}
 	return result, err
 }

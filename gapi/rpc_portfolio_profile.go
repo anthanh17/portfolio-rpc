@@ -6,16 +6,15 @@ import (
 	db "portfolio-profile-rpc/db/sqlc"
 	"portfolio-profile-rpc/rd_portfolio_rpc"
 
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rpc.CreatePortfolioProfileRequest) (*rd_portfolio_rpc.CreatePortfolioProfileResponse, error) {
-	portfolioId := uuid.New().String()
-
-	// Default authorID = userID
-	authorID := in.UserId
+	if in.AuthorId == "" {
+		s.logger.Sugar().Infof("\nAuthorId empty\n")
+		return nil, status.Errorf(codes.Internal, "failed to create portfolio: AuthorId empty")
+	}
 
 	// convert assests
 	assesConvert := make([]*db.PortfolioAsset, len(in.Assets))
@@ -27,13 +26,7 @@ func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 		}
 	}
 
-	// This portfolio belongs to someone else.
-	if in.AuthorId != "" {
-		authorID = in.AuthorId
-	}
-
 	arg := db.CreatePortfolioTxParams{
-		PortfolioID:    portfolioId,
 		CategoryID:     in.CategoryId,
 		PortfolioName:  in.Name,
 		OrganizationId: in.OrganizationId,
@@ -41,7 +34,7 @@ func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 		AdvisorId:      in.AdvisorId,
 		Assets:         assesConvert,
 		Privacy:        in.Privacy,
-		AuthorID:       authorID,
+		AuthorID:       in.AuthorId,
 	}
 
 	// Add transaction - create a new portfolio
@@ -57,7 +50,7 @@ func (s *Server) CreatePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 
 	fmt.Printf("\n==> Created portfolioId: %s", txResult.PortfolioID)
 	return &rd_portfolio_rpc.CreatePortfolioProfileResponse{
-		Status: true,
+		ProfileId: txResult.PortfolioID,
 	}, nil
 }
 

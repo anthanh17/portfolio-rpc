@@ -73,25 +73,24 @@ message PortfolioAsset {
 }
 
 message CreatePortfolioProfileRequest {
-  string category_id = 1;
-  string name = 2;
+  string name = 1;
+  repeated string category_id = 2;
   repeated string organization_id = 3;
   repeated string branch_id = 4;
   repeated string advisor_id = 5;
   repeated PortfolioAsset assets = 6;
   string privacy = 7;
   string author_id = 8;
-  string user_id = 9;
 }
 
 message CreatePortfolioProfileResponse {
-  bool status = 1;
+  string profile_id = 1;
 }
 
 message UpdatePortfolioProfileRequest {
   string profile_id = 1;
-  string category_id = 2;
-  string name = 3;
+  string name = 2;
+  repeated string category_id = 3;
   repeated string organization_id = 4;
   repeated string branch_id = 5;
   repeated string advisor_id = 6;
@@ -171,8 +170,9 @@ message TProfile {
 
 message GetProfileByUserIDResponse {
   repeated TProfile data = 1;
-  uint64 current = 2;
-  uint64 total = 3;
+  uint64 total = 2;
+  uint64 current_page = 3;
+  uint64 total_page = 4;
 }
 
 message CreateCategoryRequest {
@@ -207,7 +207,7 @@ message DeleteCategoryResponse {
 message GetCategoryByUserIDRequest {
   string user_id = 1;
   uint64 page = 2;
-  uint64 page_size = 3;
+  uint64 size = 3;
 }
 
 message CategoryData {
@@ -220,17 +220,44 @@ message CategoryData {
 
 message GetCategoryByUserIDResponse {
   repeated CategoryData data = 1;
-  uint64 current = 2;
-  uint64 total = 3;
+  uint64 total = 2;
+  uint64 current_page = 3;
+  uint64 total_page = 4;
 }
 
 message RemovePortfolioProfileInCategoryRequest {
   string categogy_id = 1;
-  string profile_id = 2;
+  repeated string profile_ids = 2;
 }
 
 message RemovePortfolioProfileInCategoryResponse {
   bool status = 1;
+}
+
+message GetDetailCategogyRequest {
+  string categogy_id = 1;
+  uint64 page = 2;
+  uint64 size = 3;
+}
+
+message TCProfile {
+  string id = 1;
+  string name = 2;
+  TProfileValue charts = 3;
+  string privacy = 4;
+  string author_id = 5;
+  uint64 total_return = 6;
+  uint64 created_at = 7;
+  uint64 updated_at = 8;
+}
+
+message GetDetailCategogyResponse {
+  string id = 1;
+  string name = 2;
+  repeated TCProfile profiles = 3;
+  uint64 total = 4;
+  uint64 current_page = 5;
+  uint64 total_page = 6;
 }
 
 service RdPortfolioRpc {
@@ -256,29 +283,4 @@ service RdPortfolioRpc {
   rpc GetCategoryByUserID (GetCategoryByUserIDRequest) returns (GetCategoryByUserIDResponse) {}
   rpc RemovePortfolioProfileInCategory (RemovePortfolioProfileInCategoryRequest) returns (RemovePortfolioProfileInCategoryResponse) {}
   rpc GetDetailCategogy (GetDetailCategogyRequest) returns (GetDetailCategogyResponse) {}
-}
-
-message GetDetailCategogyRequest {
-  string categogy_id = 1;
-  uint64 page = 2;
-  uint64 page_size = 3;
-}
-
-message TCProfile {
-  string id = 1;
-  string name = 2;
-  TProfileValue charts = 3;
-  string privacy = 4;
-  string author_id = 5;
-  uint64 total_return = 6;
-  uint64 created_at = 7;
-  uint64 updated_at = 8;
-}
-
-message GetDetailCategogyResponse {
-  string id = 1;
-  string name = 2;
-  repeated TCProfile profiles = 3;
-  uint64 current = 4;
-  uint64 total = 5;
 }

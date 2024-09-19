@@ -25,4 +25,4 @@ COPY --from=builder /rpc/etc /rpc/etc
 
 EXPOSE 9090
 
-CMD ["./main", "-f", "etc/rdportfoliorpc.yaml"]
+CMD ["./main", 
