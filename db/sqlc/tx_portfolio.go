@@ -38,6 +38,19 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
+		// table: u_portfolio
+		argUPortfolio := CreateUserPortfolioParams{
+			UserID: arg.AuthorID,
+			PortfolioID: pgtype.Text{
+				String: portfolioId,
+				Valid:  true,
+			},
+		}
+		_, err = q.CreateUserPortfolio(ctx, argUPortfolio)
+		if err != nil {
+			return errors.New("error CreateUserPortfolio " + err.Error())
+		}
+
 		// table: portfolios
 		argPortfolio := CreatePortfolioParams{
 			ID:       portfolioId,

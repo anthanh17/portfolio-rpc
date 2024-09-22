@@ -142,8 +142,9 @@ message GetAdvisorByIDResponse {
 }
 
 message GetProfileByUserIDRequest {
-  uint64 limit = 1;
-  uint64 offset = 2;
+  string user_id = 1;
+  uint64 page = 2;
+  uint64 size = 3;
 }
 
 message TProfileValue  {
@@ -161,7 +162,7 @@ message TProfile {
   string name = 2;
   TProfileValue charts = 3;
   string privacy = 4;
-  Author author = 5;
+  string author = 5;
   uint64 total_return = 6;
   uint64 updated_at = 7;
   uint64 created_at = 8;

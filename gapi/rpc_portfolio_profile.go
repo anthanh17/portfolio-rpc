@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"fmt"
+	"math"
 	db "portfolio-profile-rpc/db/sqlc"
 	"portfolio-profile-rpc/rd_portfolio_rpc"
 
@@ -107,9 +108,64 @@ func (s *Server) DeletePortfolioProfile(ctx context.Context, in *rd_portfolio_rp
 	}, nil
 }
 
-// TODO
 func (s *Server) GetProfileByUserID(ctx context.Context, in *rd_portfolio_rpc.GetProfileByUserIDRequest) (*rd_portfolio_rpc.GetProfileByUserIDResponse, error) {
+	// get total u_portfolio by user id
+	totalUPortfolioCh := make(chan int64)
+	go func() {
+		total, _ := s.store.CountProfilesInUserPortfolio(ctx, in.UserId)
 
-	// fmt.Printf("\n==> Created portfolioId: %s", txResult.PortfolioID)
-	return &rd_portfolio_rpc.GetProfileByUserIDResponse{}, nil
+		// errGet <- err
+		totalUPortfolioCh <- total
+		close(totalUPortfolioCh)
+	}()
+
+	// tale: u_portfolio -> list portfolio_id by user_id
+	portfolioIdCh := make(chan string)
+	go func() {
+		argUPortfolio := db.GetUPortfolioByUserIdParams{
+			UserID: in.UserId,
+			Limit: int32(in.Size),
+			Offset: int32(in.Page),
+		}
+		portfolioIds, _ := s.store.GetUPortfolioByUserId(ctx, argUPortfolio)
+		// errGet <- err
+
+		for _, item := range portfolioIds {
+			portfolioIdCh <- item.String
+		}
+
+		close(portfolioIdCh)
+	}()
+
+	total := <-totalUPortfolioCh
+
+	portfolioIds := []string{}
+	for portfolioId := range portfolioIdCh {
+		portfolioIds = append(portfolioIds, portfolioId)
+	}
+
+	var data []*rd_portfolio_rpc.TProfile
+	for _, id := range portfolioIds {
+		portfolioInfo, _ := s.store.GetProfilesByPortfolioId(ctx, id)
+		// TODO: chart, Total return
+		data = append(data, &rd_portfolio_rpc.TProfile{
+			Id: portfolioInfo.ID,
+			Name: portfolioInfo.Name,
+			Privacy: portfolioInfo.Privacy,
+			Author: portfolioInfo.AuthorID,
+			CreatedAt:     uint64(portfolioInfo.CreatedAt.Unix()),
+			UpdatedAt:     uint64(portfolioInfo.UpdatedAt.Unix()),
+		})
+	}
+
+	// Calc totalPage
+	totalPage := int(math.Ceil(float64(total) / float64(in.Size)))
+
+	fmt.Printf("\n==> Get Profile By UserID: %s", in.UserId)
+	return &rd_portfolio_rpc.GetProfileByUserIDResponse{
+		Data:        data,
+		Total:       uint64(total),
+		CurrentPage: uint64(in.Page),
+		TotalPage:   uint64(totalPage),
+	}, nil
 }
