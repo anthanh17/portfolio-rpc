@@ -123,6 +123,12 @@ type HamonixBusinessUCategory struct {
 	UserID     string      `json:"user_id"`
 }
 
+type HamonixBusinessUPortfolio struct {
+	ID          int64       `json:"id"`
+	UserID      string      `json:"user_id"`
+	PortfolioID pgtype.Text `json:"portfolio_id"`
+}
+
 type HamonixBusinessUser struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`

@@ -24,6 +24,18 @@ WHERE id = $1;
 SELECT * FROM hamonix_business.p_categories
 WHERE category_id = $1;
 
+-- name: CountPCategoryByCategoryId :one
+SELECT COUNT(id)
+FROM hamonix_business.p_categories
+WHERE category_id = $1;
+
+-- name: GetPCategoryByCategoryIdPaging :many
+SELECT portfolio_id FROM hamonix_business.p_categories
+WHERE category_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3;;
+
 -- name: CreateUCategory :one
 INSERT INTO hamonix_business.u_categories (
   category_id,
@@ -34,6 +46,14 @@ INSERT INTO hamonix_business.u_categories (
 
 -- name: GetUCategoryByUserId :many
 SELECT * FROM hamonix_business.u_categories
+WHERE user_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3;
+
+-- name: CountCategoriesByUserID :one
+SELECT COUNT(id)
+FROM hamonix_business.u_categories
 WHERE user_id = $1;
 
 -- name: CountProfilesInCategory :one

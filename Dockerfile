@@ -23,6 +23,6 @@ WORKDIR /rpc
 COPY --from=builder /rpc /rpc
 COPY --from=builder /rpc/etc /rpc/etc
 
-EXPOSE 9090
+EXPOSE 9000
 
 CMD ["./main", "-f", "etc/rdportfoliorpc.yaml"]

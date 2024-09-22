@@ -11,6 +11,8 @@ import (
 )
 
 type Querier interface {
+	CountCategoriesByUserID(ctx context.Context, userID string) (int64, error)
+	CountPCategoryByCategoryId(ctx context.Context, categoryID pgtype.Text) (int64, error)
 	CountProfilesInCategory(ctx context.Context, categoryID pgtype.Text) (int64, error)
 	CreateAsset(ctx context.Context, arg CreateAssetParams) (HamonixBusinessAsset, error)
 	CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) (HamonixBusinessPAdvisor, error)
@@ -20,6 +22,7 @@ type Querier interface {
 	CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error)
 	CreatePortfolioCategory(ctx context.Context, arg CreatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
 	CreateUCategory(ctx context.Context, arg CreateUCategoryParams) (HamonixBusinessUCategory, error)
+	CreateUserPortfolio(ctx context.Context, arg CreateUserPortfolioParams) (HamonixBusinessUPortfolio, error)
 	DeleteAsset(ctx context.Context, arg DeleteAssetParams) error
 	DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error
 	DeletePBranch(ctx context.Context, arg DeletePBranchParams) error
@@ -35,11 +38,12 @@ type Querier interface {
 	GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error)
 	GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error)
 	GetPCategoryByCategoryId(ctx context.Context, categoryID pgtype.Text) ([]HamonixBusinessPCategory, error)
+	GetPCategoryByCategoryIdPaging(ctx context.Context, arg GetPCategoryByCategoryIdPagingParams) ([]string, error)
 	GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error)
 	GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error)
 	GetPortfolioCategoryById(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error)
 	GetProfilesByPortfolioId(ctx context.Context, id string) (HamonixBusinessPortfolio, error)
-	GetUCategoryByUserId(ctx context.Context, userID string) ([]HamonixBusinessUCategory, error)
+	GetUCategoryByUserId(ctx context.Context, arg GetUCategoryByUserIdParams) ([]HamonixBusinessUCategory, error)
 	UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error)
 	UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error)
 	UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error)

@@ -11,6 +11,32 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countCategoriesByUserID = `-- name: CountCategoriesByUserID :one
+SELECT COUNT(id)
+FROM hamonix_business.u_categories
+WHERE user_id = $1
+`
+
+func (q *Queries) CountCategoriesByUserID(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRow(ctx, countCategoriesByUserID, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPCategoryByCategoryId = `-- name: CountPCategoryByCategoryId :one
+SELECT COUNT(id)
+FROM hamonix_business.p_categories
+WHERE category_id = $1
+`
+
+func (q *Queries) CountPCategoryByCategoryId(ctx context.Context, categoryID pgtype.Text) (int64, error) {
+	row := q.db.QueryRow(ctx, countPCategoryByCategoryId, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countProfilesInCategory = `-- name: CountProfilesInCategory :one
 SELECT COUNT(portfolio_id)
 FROM hamonix_business.p_categories
@@ -127,6 +153,40 @@ func (q *Queries) GetPCategoryByCategoryId(ctx context.Context, categoryID pgtyp
 	return items, nil
 }
 
+const getPCategoryByCategoryIdPaging = `-- name: GetPCategoryByCategoryIdPaging :many
+SELECT portfolio_id FROM hamonix_business.p_categories
+WHERE category_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3
+`
+
+type GetPCategoryByCategoryIdPagingParams struct {
+	CategoryID pgtype.Text `json:"category_id"`
+	Limit      int32       `json:"limit"`
+	Offset     int32       `json:"offset"`
+}
+
+func (q *Queries) GetPCategoryByCategoryIdPaging(ctx context.Context, arg GetPCategoryByCategoryIdPagingParams) ([]string, error) {
+	rows, err := q.db.Query(ctx, getPCategoryByCategoryIdPaging, arg.CategoryID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var portfolio_id string
+		if err := rows.Scan(&portfolio_id); err != nil {
+			return nil, err
+		}
+		items = append(items, portfolio_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPortfolioCategoryById = `-- name: GetPortfolioCategoryById :one
 SELECT id, name, description, created_at, updated_at FROM hamonix_business.portfolio_categories
 WHERE id = $1
@@ -148,10 +208,19 @@ func (q *Queries) GetPortfolioCategoryById(ctx context.Context, id string) (Hamo
 const getUCategoryByUserId = `-- name: GetUCategoryByUserId :many
 SELECT id, category_id, user_id FROM hamonix_business.u_categories
 WHERE user_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetUCategoryByUserId(ctx context.Context, userID string) ([]HamonixBusinessUCategory, error) {
-	rows, err := q.db.Query(ctx, getUCategoryByUserId, userID)
+type GetUCategoryByUserIdParams struct {
+	UserID string `json:"user_id"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+
+func (q *Queries) GetUCategoryByUserId(ctx context.Context, arg GetUCategoryByUserIdParams) ([]HamonixBusinessUCategory, error) {
+	rows, err := q.db.Query(ctx, getUCategoryByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

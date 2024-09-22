@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"errors"
-	"sync"
+	"portfolio-profile-rpc/util"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -119,8 +119,9 @@ func (store *SQLStore) UpdatePortfolioCategoryTx(ctx context.Context, arg Update
 				currentPCategories[i] = pc.PortfolioID
 			}
 
-			add, remove := findDifferences(currentPCategories, arg.ProfileIds)
+			add, remove := util.FindDifferences(currentPCategories, arg.ProfileIds)
 
+			// table: p_categories
 			if len(add) > 0 {
 				for _, portfolioID := range add {
 					argPC := CreatePCategoryParams{
@@ -130,6 +131,7 @@ func (store *SQLStore) UpdatePortfolioCategoryTx(ctx context.Context, arg Update
 							Valid:  true,
 						},
 					}
+
 					_, err = q.CreatePCategory(ctx, argPC)
 					if err != nil {
 						return errors.New("error UpdatePortfolioCategory - CreatePCategory " + err.Error())
@@ -138,7 +140,7 @@ func (store *SQLStore) UpdatePortfolioCategoryTx(ctx context.Context, arg Update
 			}
 
 			if len(remove) > 0 {
-				for _, portfolioID := range add {
+				for _, portfolioID := range remove {
 					argPC := DeletePCategoryParams{
 						PortfolioID: portfolioID,
 						CategoryID: pgtype.Text{
@@ -146,6 +148,7 @@ func (store *SQLStore) UpdatePortfolioCategoryTx(ctx context.Context, arg Update
 							Valid:  true,
 						},
 					}
+
 					err = q.DeletePCategory(ctx, argPC)
 					if err != nil {
 						return errors.New("error UpdatePortfolioCategory - DeletePCategory " + err.Error())
@@ -211,7 +214,7 @@ func (store *SQLStore) DeletePortfolioCategoryTx(ctx context.Context, arg Delete
 		return err
 	})
 
-	if err != nil {
+	if err == nil {
 		result.Status = true
 	}
 	return result, err
@@ -232,36 +235,18 @@ func (store *SQLStore) RemovePortfolioProfileInCategoryTx(ctx context.Context, a
 	result.Status = false
 
 	err := store.execTx(ctx, func(q *Queries) error {
-		errCh := make(chan error, len(arg.PortfolioIDs))
-
-		// Start goroutines for each portfolio ID
-		var wg sync.WaitGroup
 		for _, portfolioID := range arg.PortfolioIDs {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			argPCategory := DeletePCategoryParams{
+				PortfolioID: portfolioID,
+				CategoryID: pgtype.Text{
+					String: arg.CategoryID,
+					Valid:  true,
+				},
+			}
 
-				argPCategory := DeletePCategoryParams{
-					PortfolioID: portfolioID,
-					CategoryID: pgtype.Text{
-						String: arg.CategoryID,
-						Valid:  true,
-					},
-				}
-
-				err := q.DeletePCategory(ctx, argPCategory)
-				errCh <- err
-			}()
-		}
-
-		// Wait for all goroutines to finish
-		wg.Wait()
-		close(errCh)
-
-		// Collect and handle errors
-		for err := range errCh {
+			err := q.DeletePCategory(ctx, argPCategory)
 			if err != nil {
-				return err
+				return errors.New("error RemovePortfolioProfileInCategoryTx " + err.Error())
 			}
 		}
 
