@@ -17,12 +17,6 @@ CREATE TABLE "hamonix_business"."users" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "hamonix_business"."u_portfolio" (
-  "id" bigserial PRIMARY KEY,
-  "user_id" varchar NOT NULL,
-  "portfolio_id" varchar
-);
-
 CREATE TABLE "hamonix_business"."portfolios" (
   "id" varchar PRIMARY KEY,
   "name" varchar UNIQUE NOT NULL,
@@ -55,6 +49,12 @@ CREATE TABLE "hamonix_business"."portfolio_categories" (
   "description" varchar,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
+);
+
+CREATE TABLE "hamonix_business"."u_portfolio" (
+  "id" bigserial PRIMARY KEY,
+  "user_id" varchar NOT NULL,
+  "portfolio_id" varchar
 );
 
 CREATE TABLE "hamonix_business"."u_categories" (

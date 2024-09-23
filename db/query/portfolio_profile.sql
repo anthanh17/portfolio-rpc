@@ -126,16 +126,32 @@ WHERE portfolio_id = $1;
 SELECT * FROM hamonix_business.p_categories
 WHERE portfolio_id = $1;
 
+-- name: GetListCategoryPCategoryByPortfolioId :many
+SELECT category_id FROM hamonix_business.p_categories
+WHERE portfolio_id = $1;
+
 -- name: GetPBranchByPortfolioId :many
 SELECT * FROM hamonix_business.p_branches
+WHERE portfolio_id = $1;
+
+-- name: GetListBranchPBranchByPortfolioId :many
+SELECT branch_id FROM hamonix_business.p_branches
 WHERE portfolio_id = $1;
 
 -- name: GetPOrganizationByPortfolioId :many
 SELECT * FROM hamonix_business.p_organizations
 WHERE portfolio_id = $1;
 
+-- name: GetListOrganizationPOrganizationByPortfolioId :many
+SELECT organization_id FROM hamonix_business.p_organizations
+WHERE portfolio_id = $1;
+
 -- name: GetPAdvisorByPortfolioId :many
 SELECT * FROM hamonix_business.p_advisors
+WHERE portfolio_id = $1;
+
+-- name: GetListAdvisorPAdvisorsByPortfolioId :many
+SELECT advisor_id FROM hamonix_business.p_advisors
 WHERE portfolio_id = $1;
 
 -- name: GetProfilesByPortfolioId :one

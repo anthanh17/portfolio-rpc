@@ -143,8 +143,9 @@ message GetAdvisorByIDResponse {
 
 message GetProfileByUserIDRequest {
   string user_id = 1;
-  uint64 page = 2;
-  uint64 size = 3;
+  string category_id = 2;
+  uint64 page = 3;
+  uint64 size = 4;
 }
 
 message TProfileValue  {
@@ -261,6 +262,37 @@ message GetDetailCategogyResponse {
   uint64 total_page = 6;
 }
 
+message ObjInfo {
+  string id = 1;
+  string name = 2;
+}
+
+message GetDetailProfileRequest {
+  string profile_id = 1;
+}
+
+message AssetInfo {
+  uint64 ticker_id = 1;
+  string name = 2;
+  string description = 3;
+  double allocation = 4;
+}
+
+message GetDetailProfileResponse {
+  string id = 1;
+  string name = 2;
+  string privacy = 3;
+  ObjInfo author = 4;
+  repeated ObjInfo category = 5;
+  repeated ObjInfo advisor = 8;
+  repeated ObjInfo branch = 9;
+  repeated ObjInfo organization = 10;
+  uint64 number_linked_accounts = 11;
+  repeated AssetInfo assets = 12;
+  uint64 created_at = 6;
+  uint64 updated_at = 7;
+}
+
 service RdPortfolioRpc {
   rpc Ping(Request) returns(Response);
   // Portfolio optimization
@@ -277,6 +309,7 @@ service RdPortfolioRpc {
   rpc GetAdvisorByID (GetAdvisorByIDRequest) returns (GetAdvisorByIDResponse) {}
 
   rpc GetProfileByUserID (GetProfileByUserIDRequest) returns (GetProfileByUserIDResponse) {}
+  rpc GetDetailProfile (GetDetailProfileRequest) returns (GetDetailProfileResponse) {}
 
   rpc CreateCategory (CreateCategoryRequest) returns (CreateCategoryResponse) {}
   rpc UpdateCategory (UpdateCategoryRequest) returns (UpdateCategoryResponse) {}

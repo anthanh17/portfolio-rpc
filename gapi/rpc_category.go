@@ -7,8 +7,6 @@ import (
 	db "portfolio-profile-rpc/db/sqlc"
 	"portfolio-profile-rpc/rd_portfolio_rpc"
 
-	"sync"
-
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -98,7 +96,7 @@ func (s *Server) RemovePortfolioProfileInCategory(ctx context.Context, in *rd_po
 }
 
 func (s *Server) GetCategoryByUserID(ctx context.Context, in *rd_portfolio_rpc.GetCategoryByUserIDRequest) (*rd_portfolio_rpc.GetCategoryByUserIDResponse, error) {
-	// TODO: check lai
+	// TODO: check lai, err add goroutine
 	// from table: u_catagories -> list categories
 	arg := db.GetUCategoryByUserIdParams{
 		UserID: in.UserId,
@@ -113,61 +111,55 @@ func (s *Server) GetCategoryByUserID(ctx context.Context, in *rd_portfolio_rpc.G
 	}
 
 	// -------------   Start goroutines --------
-	var wg sync.WaitGroup
-
-	errCh := make(chan error, 2)
-
+	// errCh := make(chan error, 2)
 	// Get total categories by user id
 	totalCategoriesCh := make(chan int64)
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		total, err := s.store.CountCategoriesByUserID(ctx, in.UserId)
-		errCh <- err
+		total, _ := s.store.CountCategoriesByUserID(ctx, in.UserId)
+		// errCh <- err
 		totalCategoriesCh <- total
+
+		close(totalCategoriesCh)
 	}()
 
 	// from list categories -> table: p_categories -> list profile
-	dataCh := make(chan []*rd_portfolio_rpc.CategoryData, len(uCategories))
-	wg.Add(1)
+	var data []*rd_portfolio_rpc.CategoryData
+	// dataCh := make(chan []*rd_portfolio_rpc.CategoryData, len(uCategories))
+	dataCh := make(chan *rd_portfolio_rpc.CategoryData)
 	go func() {
-		defer wg.Done()
-		var data []*rd_portfolio_rpc.CategoryData
 		for _, value := range uCategories {
-			categoryInfo, err := s.store.GetCategoryInfo(ctx, value.CategoryID.String)
+			categoryInfo, _ := s.store.GetCategoryInfo(ctx, value.CategoryID.String)
 
-			count, err := s.store.CountProfilesInCategory(ctx, pgtype.Text{
+			count, _ := s.store.CountProfilesInCategory(ctx, pgtype.Text{
 				String: value.CategoryID.String,
 				Valid:  true,
 			})
 
-			errCh <- err
-
-			data = append(data, &rd_portfolio_rpc.CategoryData{
+			// errCh <- err
+			dataCh <- &rd_portfolio_rpc.CategoryData{
 				Id:            value.CategoryID.String,
 				Name:          categoryInfo.Name,
 				NumberProfile: uint64(count),
 				CreatedAt:     uint64(categoryInfo.CreatedAt.Unix()),
 				UpdatedAt:     uint64(categoryInfo.UpdatedAt.Unix()),
-			})
+			}
 		}
-		dataCh <- data
+		close(dataCh)
 	}()
 
-	// Wait for all goroutines to finish
-	wg.Wait()
-	close(errCh)
-
-	// Collect and handle errors
-	for err := range errCh {
-		if err != nil {
-			s.logger.Sugar().Infof("\ncannot GetCategoryByUserID: %v\n", err)
-			return nil, status.Errorf(codes.Internal, "failed to GetCategoryByUserID: %s", err)
-		}
+	for d := range dataCh {
+		data = append(data, d)
 	}
 
+	// Collect and handle errors
+	// for err := range errCh {
+	// 	if err != nil {
+	// 		s.logger.Sugar().Infof("\ncannot GetCategoryByUserID: %v\n", err)
+	// 		return nil, status.Errorf(codes.Internal, "failed to GetCategoryByUserID: %s", err)
+	// 	}
+	// }
+
 	total := <-totalCategoriesCh
-	data := <-dataCh
 	totalPage := int(math.Ceil(float64(total) / float64(in.Size)))
 
 	fmt.Printf("\n==> Get list category by user id: %s", in.UserId)
@@ -180,7 +172,6 @@ func (s *Server) GetCategoryByUserID(ctx context.Context, in *rd_portfolio_rpc.G
 }
 
 func (s *Server) GetDetailCategogy(ctx context.Context, in *rd_portfolio_rpc.GetDetailCategogyRequest) (*rd_portfolio_rpc.GetDetailCategogyResponse, error) {
-	// TODO: check lai
 	// -------------   Start goroutines --------
 	// errGet := make(chan error, 4)
 
@@ -191,7 +182,7 @@ func (s *Server) GetDetailCategogy(ctx context.Context, in *rd_portfolio_rpc.Get
 			String: in.CategogyId,
 			Valid:  true,
 		})
-		fmt.Println("total:", total)
+
 		// errGet <- err
 		totalPCategoriesCh <- total
 		close(totalPCategoriesCh)
@@ -235,7 +226,6 @@ func (s *Server) GetDetailCategogy(ctx context.Context, in *rd_portfolio_rpc.Get
 	categoryInfo := <-categoryInfoCh
 	total := <-totalPCategoriesCh
 
-	fmt.Println("MMMMMMMMMM")
 	// table: profile
 	var profiles []*rd_portfolio_rpc.TCProfile
 	if len(portfolioIDs) > 0 {

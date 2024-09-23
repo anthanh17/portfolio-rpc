@@ -284,6 +284,106 @@ func (q *Queries) GetAssetsByPortfolioId(ctx context.Context, portfolioID string
 	return items, nil
 }
 
+const getListAdvisorPAdvisorsByPortfolioId = `-- name: GetListAdvisorPAdvisorsByPortfolioId :many
+SELECT advisor_id FROM hamonix_business.p_advisors
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetListAdvisorPAdvisorsByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getListAdvisorPAdvisorsByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []pgtype.Text{}
+	for rows.Next() {
+		var advisor_id pgtype.Text
+		if err := rows.Scan(&advisor_id); err != nil {
+			return nil, err
+		}
+		items = append(items, advisor_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getListBranchPBranchByPortfolioId = `-- name: GetListBranchPBranchByPortfolioId :many
+SELECT branch_id FROM hamonix_business.p_branches
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetListBranchPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getListBranchPBranchByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []pgtype.Text{}
+	for rows.Next() {
+		var branch_id pgtype.Text
+		if err := rows.Scan(&branch_id); err != nil {
+			return nil, err
+		}
+		items = append(items, branch_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getListCategoryPCategoryByPortfolioId = `-- name: GetListCategoryPCategoryByPortfolioId :many
+SELECT category_id FROM hamonix_business.p_categories
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetListCategoryPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getListCategoryPCategoryByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []pgtype.Text{}
+	for rows.Next() {
+		var category_id pgtype.Text
+		if err := rows.Scan(&category_id); err != nil {
+			return nil, err
+		}
+		items = append(items, category_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getListOrganizationPOrganizationByPortfolioId = `-- name: GetListOrganizationPOrganizationByPortfolioId :many
+SELECT organization_id FROM hamonix_business.p_organizations
+WHERE portfolio_id = $1
+`
+
+func (q *Queries) GetListOrganizationPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getListOrganizationPOrganizationByPortfolioId, portfolioID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []pgtype.Text{}
+	for rows.Next() {
+		var organization_id pgtype.Text
+		if err := rows.Scan(&organization_id); err != nil {
+			return nil, err
+		}
+		items = append(items, organization_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPAdvisorByPortfolioId = `-- name: GetPAdvisorByPortfolioId :many
 SELECT id, portfolio_id, advisor_id FROM hamonix_business.p_advisors
 WHERE portfolio_id = $1

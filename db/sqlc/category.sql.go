@@ -128,6 +128,31 @@ func (q *Queries) GetCategoryInfo(ctx context.Context, id string) (HamonixBusine
 	return i, err
 }
 
+const getListProfileIdByCategoryId = `-- name: GetListProfileIdByCategoryId :many
+SELECT portfolio_id FROM hamonix_business.p_categories
+WHERE category_id = $1
+`
+
+func (q *Queries) GetListProfileIdByCategoryId(ctx context.Context, categoryID pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, getListProfileIdByCategoryId, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var portfolio_id string
+		if err := rows.Scan(&portfolio_id); err != nil {
+			return nil, err
+		}
+		items = append(items, portfolio_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPCategoryByCategoryId = `-- name: GetPCategoryByCategoryId :many
 SELECT id, portfolio_id, category_id FROM hamonix_business.p_categories
 WHERE category_id = $1

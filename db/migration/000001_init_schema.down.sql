@@ -15,3 +15,4 @@ DROP TABLE IF EXISTS hamonix_business.eq_advisors;
 DROP TABLE IF EXISTS hamonix_business.eq_accounts;
 DROP TABLE IF EXISTS hamonix_business.users;
 DROP TABLE IF EXISTS hamonix_business.u_categories;
+DROP TABLE IF EXISTS hamonix_business.u_portfolio;

@@ -24,6 +24,10 @@ WHERE id = $1;
 SELECT * FROM hamonix_business.p_categories
 WHERE category_id = $1;
 
+-- name: GetListProfileIdByCategoryId :many
+SELECT portfolio_id FROM hamonix_business.p_categories
+WHERE category_id = $1;
+
 -- name: CountPCategoryByCategoryId :one
 SELECT COUNT(id)
 FROM hamonix_business.p_categories
