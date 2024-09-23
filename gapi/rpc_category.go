@@ -111,20 +111,19 @@ func (s *Server) GetCategoryByUserID(ctx context.Context, in *rd_portfolio_rpc.G
 	}
 
 	// -------------   Start goroutines --------
-	// errCh := make(chan error, 2)
 	// Get total categories by user id
+	errCategoriesCh := make(chan error)
 	totalCategoriesCh := make(chan int64)
 	go func() {
-		total, _ := s.store.CountCategoriesByUserID(ctx, in.UserId)
-		// errCh <- err
-		totalCategoriesCh <- total
+		total, err := s.store.CountCategoriesByUserID(ctx, in.UserId)
+		errCategoriesCh <- err
 
+		totalCategoriesCh <- total
 		close(totalCategoriesCh)
+		close(errCategoriesCh)
 	}()
 
 	// from list categories -> table: p_categories -> list profile
-	var data []*rd_portfolio_rpc.CategoryData
-	// dataCh := make(chan []*rd_portfolio_rpc.CategoryData, len(uCategories))
 	dataCh := make(chan *rd_portfolio_rpc.CategoryData)
 	go func() {
 		for _, value := range uCategories {
@@ -147,17 +146,15 @@ func (s *Server) GetCategoryByUserID(ctx context.Context, in *rd_portfolio_rpc.G
 		close(dataCh)
 	}()
 
+	var data []*rd_portfolio_rpc.CategoryData
 	for d := range dataCh {
 		data = append(data, d)
 	}
 
-	// Collect and handle errors
-	// for err := range errCh {
-	// 	if err != nil {
-	// 		s.logger.Sugar().Infof("\ncannot GetCategoryByUserID: %v\n", err)
-	// 		return nil, status.Errorf(codes.Internal, "failed to GetCategoryByUserID: %s", err)
-	// 	}
-	// }
+	if <-errCategoriesCh != nil {
+		s.logger.Sugar().Infof("\ncannot CountCategoriesByUserID: %v\n", err)
+		return nil, status.Errorf(codes.Internal, "failed to CountCategoriesByUserID: %s", err)
+	}
 
 	total := <-totalCategoriesCh
 	totalPage := int(math.Ceil(float64(total) / float64(in.Size)))
