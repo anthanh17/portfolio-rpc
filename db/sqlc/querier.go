@@ -6,59 +6,36 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
-	CountCategoriesByUserID(ctx context.Context, userID string) (int64, error)
-	CountPCategoryByCategoryId(ctx context.Context, categoryID pgtype.Text) (int64, error)
-	CountProfilesInCategory(ctx context.Context, categoryID pgtype.Text) (int64, error)
-	CountProfilesInUserPortfolio(ctx context.Context, userID string) (int64, error)
-	CreateAsset(ctx context.Context, arg CreateAssetParams) (HamonixBusinessAsset, error)
-	CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) (HamonixBusinessPAdvisor, error)
-	CreatePBranch(ctx context.Context, arg CreatePBranchParams) (HamonixBusinessPBranch, error)
-	CreatePCategory(ctx context.Context, arg CreatePCategoryParams) (HamonixBusinessPCategory, error)
-	CreatePOrganization(ctx context.Context, arg CreatePOrganizationParams) (HamonixBusinessPOrganization, error)
-	CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error)
-	CreatePortfolioCategory(ctx context.Context, arg CreatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
-	CreateUCategory(ctx context.Context, arg CreateUCategoryParams) (HamonixBusinessUCategory, error)
-	CreateUserPortfolio(ctx context.Context, arg CreateUserPortfolioParams) (HamonixBusinessUPortfolio, error)
+	CheckIdExitsPortfolioProfile(ctx context.Context, id string) (bool, error)
+	CountAccountsLinkedProfileByProfileId(ctx context.Context, profileID string) (int64, error)
+	CountProfilesInUserPortfolioProfile(ctx context.Context, authorID string) (int64, error)
+	CreateAsset(ctx context.Context, arg CreateAssetParams) (HarmonixBusinessAsset, error)
+	CreateLinkedProfileToAccount(ctx context.Context, arg CreateLinkedProfileToAccountParams) (HarmonixBusinessHrnProfileAccount, error)
+	CreatePortfolioProfile(ctx context.Context, arg CreatePortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	DeleteAllLinkedProfileAccountByProfileId(ctx context.Context, profileID string) error
 	DeleteAsset(ctx context.Context, arg DeleteAssetParams) error
-	DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error
-	DeletePBranch(ctx context.Context, arg DeletePBranchParams) error
-	DeletePCategory(ctx context.Context, arg DeletePCategoryParams) error
-	DeletePOrganization(ctx context.Context, arg DeletePOrganizationParams) error
-	DeletePortfolio(ctx context.Context, id string) error
-	DeletePortfolioCategory(ctx context.Context, id string) error
-	GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error)
-	GetCategoryInfo(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error)
-	GetEQAdvisorByID(ctx context.Context, id string) (HamonixBusinessEqAdvisor, error)
-	GetEQBranchByID(ctx context.Context, id string) (HamonixBusinessEqBranch, error)
-	GetEQOrganizationByID(ctx context.Context, id string) (HamonixBusinessEqOrganization, error)
-	GetListAdvisorPAdvisorsByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error)
-	GetListAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error)
-	GetListBranchPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error)
-	GetListCategoryPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error)
-	GetListOrganizationPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error)
-	GetListProfileIdByCategoryId(ctx context.Context, categoryID pgtype.Text) ([]string, error)
-	GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error)
-	GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error)
-	GetPCategoryByCategoryId(ctx context.Context, categoryID pgtype.Text) ([]HamonixBusinessPCategory, error)
-	GetPCategoryByCategoryIdPaging(ctx context.Context, arg GetPCategoryByCategoryIdPagingParams) ([]string, error)
-	GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error)
-	GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error)
-	GetPortfolioCategoryById(ctx context.Context, id string) (HamonixBusinessPortfolioCategory, error)
-	GetProfilesByPortfolioId(ctx context.Context, id string) (HamonixBusinessPortfolio, error)
-	GetUCategoryByUserId(ctx context.Context, arg GetUCategoryByUserIdParams) ([]HamonixBusinessUCategory, error)
-	GetUPortfolioByUserId(ctx context.Context, arg GetUPortfolioByUserIdParams) ([]pgtype.Text, error)
-	UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error)
-	UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error)
-	UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error)
-	UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error)
-	UpdatePOrganization(ctx context.Context, arg UpdatePOrganizationParams) (HamonixBusinessPOrganization, error)
-	UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams) (HamonixBusinessPortfolio, error)
-	UpdatePortfolioCategory(ctx context.Context, arg UpdatePortfolioCategoryParams) (HamonixBusinessPortfolioCategory, error)
+	DeleteLinkedProfileAccount(ctx context.Context, arg DeleteLinkedProfileAccountParams) error
+	DeleteListAssetsById(ctx context.Context, id int64) error
+	DeletePortfolioProfile(ctx context.Context, id string) error
+	GetAssetsByProfileId(ctx context.Context, portfolioProfileID string) ([]HarmonixBusinessAsset, error)
+	GetListAccountsLinkedProfileByProfileId(ctx context.Context, arg GetListAccountsLinkedProfileByProfileIdParams) ([]string, error)
+	GetListAdvisorsBranchesOrganizationsByProfileId(ctx context.Context, id string) ([]GetListAdvisorsBranchesOrganizationsByProfileIdRow, error)
+	GetListAssetIdsByPortfolioId(ctx context.Context, portfolioProfileID string) ([]int64, error)
+	GetListAssetsByPortfolioId(ctx context.Context, portfolioProfileID string) ([]HarmonixBusinessAsset, error)
+	GetListProfileIdByUserId(ctx context.Context, arg GetListProfileIdByUserIdParams) ([]string, error)
+	GetPrivacyProfileById(ctx context.Context, id string) (string, error)
+	GetProfileInfoById(ctx context.Context, id string) (HarmonixBusinessPortfolioProfile, error)
+	UpdateAccountsPortfolioProfile(ctx context.Context, arg UpdateAccountsPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdateAdvisorsPortfolioProfile(ctx context.Context, arg UpdateAdvisorsPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdateBranchesPortfolioProfile(ctx context.Context, arg UpdateBranchesPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdateExpectedReturnPortfolioProfile(ctx context.Context, arg UpdateExpectedReturnPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdateIsNewBuyPointPortfolioProfile(ctx context.Context, arg UpdateIsNewBuyPointPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdateNamePortfolioProfile(ctx context.Context, arg UpdateNamePortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdateOrganizationsPortfolioProfile(ctx context.Context, arg UpdateOrganizationsPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
+	UpdatePrivacyPortfolioProfile(ctx context.Context, arg UpdatePrivacyPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error)
 }
 
 var _ Querier = (*Queries)(nil)

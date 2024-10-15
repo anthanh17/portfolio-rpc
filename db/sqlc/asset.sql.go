@@ -9,25 +9,142 @@ import (
 	"context"
 )
 
-const getListAssetsByPortfolioId = `-- name: GetListAssetsByPortfolioId :many
-SELECT id, portfolio_id, ticker_id, price, allocation FROM hamonix_business.assets
-WHERE portfolio_id = $1
-ORDER BY id
+const createAsset = `-- name: CreateAsset :one
+INSERT INTO harmonix_business.assets (
+  portfolio_profile_id,
+  ticker_name,
+  price,
+  allocation
+) VALUES (
+  $1, $2, $3, $4
+) RETURNING id, portfolio_profile_id, ticker_name, price, allocation
 `
 
-func (q *Queries) GetListAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error) {
-	rows, err := q.db.Query(ctx, getListAssetsByPortfolioId, portfolioID)
+type CreateAssetParams struct {
+	PortfolioProfileID string  `json:"portfolio_profile_id"`
+	TickerName         string  `json:"ticker_name"`
+	Price              float64 `json:"price"`
+	Allocation         float64 `json:"allocation"`
+}
+
+func (q *Queries) CreateAsset(ctx context.Context, arg CreateAssetParams) (HarmonixBusinessAsset, error) {
+	row := q.db.QueryRow(ctx, createAsset,
+		arg.PortfolioProfileID,
+		arg.TickerName,
+		arg.Price,
+		arg.Allocation,
+	)
+	var i HarmonixBusinessAsset
+	err := row.Scan(
+		&i.ID,
+		&i.PortfolioProfileID,
+		&i.TickerName,
+		&i.Price,
+		&i.Allocation,
+	)
+	return i, err
+}
+
+const deleteAsset = `-- name: DeleteAsset :exec
+DELETE FROM harmonix_business.assets
+WHERE portfolio_profile_id = $1 AND ticker_name = $2
+`
+
+type DeleteAssetParams struct {
+	PortfolioProfileID string `json:"portfolio_profile_id"`
+	TickerName         string `json:"ticker_name"`
+}
+
+func (q *Queries) DeleteAsset(ctx context.Context, arg DeleteAssetParams) error {
+	_, err := q.db.Exec(ctx, deleteAsset, arg.PortfolioProfileID, arg.TickerName)
+	return err
+}
+
+const deleteListAssetsById = `-- name: DeleteListAssetsById :exec
+DELETE FROM harmonix_business.assets
+WHERE id = $1
+`
+
+func (q *Queries) DeleteListAssetsById(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteListAssetsById, id)
+	return err
+}
+
+const getAssetsByProfileId = `-- name: GetAssetsByProfileId :many
+SELECT id, portfolio_profile_id, ticker_name, price, allocation FROM harmonix_business.assets
+WHERE portfolio_profile_id = $1
+`
+
+func (q *Queries) GetAssetsByProfileId(ctx context.Context, portfolioProfileID string) ([]HarmonixBusinessAsset, error) {
+	rows, err := q.db.Query(ctx, getAssetsByProfileId, portfolioProfileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []HamonixBusinessAsset{}
+	items := []HarmonixBusinessAsset{}
 	for rows.Next() {
-		var i HamonixBusinessAsset
+		var i HarmonixBusinessAsset
 		if err := rows.Scan(
 			&i.ID,
-			&i.PortfolioID,
-			&i.TickerID,
+			&i.PortfolioProfileID,
+			&i.TickerName,
+			&i.Price,
+			&i.Allocation,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getListAssetIdsByPortfolioId = `-- name: GetListAssetIdsByPortfolioId :many
+SELECT id FROM harmonix_business.assets
+WHERE portfolio_profile_id = $1
+`
+
+func (q *Queries) GetListAssetIdsByPortfolioId(ctx context.Context, portfolioProfileID string) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getListAssetIdsByPortfolioId, portfolioProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getListAssetsByPortfolioId = `-- name: GetListAssetsByPortfolioId :many
+SELECT id, portfolio_profile_id, ticker_name, price, allocation FROM harmonix_business.assets
+WHERE portfolio_profile_id = $1
+ORDER BY id
+`
+
+func (q *Queries) GetListAssetsByPortfolioId(ctx context.Context, portfolioProfileID string) ([]HarmonixBusinessAsset, error) {
+	rows, err := q.db.Query(ctx, getListAssetsByPortfolioId, portfolioProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HarmonixBusinessAsset{}
+	for rows.Next() {
+		var i HarmonixBusinessAsset
+		if err := rows.Scan(
+			&i.ID,
+			&i.PortfolioProfileID,
+			&i.TickerName,
 			&i.Price,
 			&i.Allocation,
 		); err != nil {

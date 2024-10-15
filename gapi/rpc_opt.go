@@ -3,11 +3,11 @@ package gapi
 import (
 	"context"
 	"fmt"
-	rd_portfolio_rpc "portfolio-profile-rpc/rd_portfolio_profile_rpc"
+	"portfolio-profile-rpc/rd_portfolio_rpc"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Row struct {

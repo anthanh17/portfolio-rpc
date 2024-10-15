@@ -7,272 +7,135 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
-const createAsset = `-- name: CreateAsset :one
-INSERT INTO hamonix_business.assets (
-  portfolio_id,
-  ticker_id,
-  price,
-  allocation
-) VALUES (
-  $1, $2, $3, $4
-) RETURNING id, portfolio_id, ticker_id, price, allocation
+const checkIdExitsPortfolioProfile = `-- name: CheckIdExitsPortfolioProfile :one
+SELECT EXISTS (
+  SELECT 1
+  FROM harmonix_business.portfolio_profiles
+  WHERE id = $1
+)
 `
 
-type CreateAssetParams struct {
-	PortfolioID string  `json:"portfolio_id"`
-	TickerID    int32   `json:"ticker_id"`
-	Price       float64 `json:"price"`
-	Allocation  float64 `json:"allocation"`
+func (q *Queries) CheckIdExitsPortfolioProfile(ctx context.Context, id string) (bool, error) {
+	row := q.db.QueryRow(ctx, checkIdExitsPortfolioProfile, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
-func (q *Queries) CreateAsset(ctx context.Context, arg CreateAssetParams) (HamonixBusinessAsset, error) {
-	row := q.db.QueryRow(ctx, createAsset,
-		arg.PortfolioID,
-		arg.TickerID,
-		arg.Price,
-		arg.Allocation,
-	)
-	var i HamonixBusinessAsset
-	err := row.Scan(
-		&i.ID,
-		&i.PortfolioID,
-		&i.TickerID,
-		&i.Price,
-		&i.Allocation,
-	)
-	return i, err
-}
-
-const createPAdvisor = `-- name: CreatePAdvisor :one
-INSERT INTO hamonix_business.p_advisors (
-  portfolio_id,
-  advisor_id
-) VALUES (
-  $1, $2
-) RETURNING id, portfolio_id, advisor_id
+const countProfilesInUserPortfolioProfile = `-- name: CountProfilesInUserPortfolioProfile :one
+SELECT COUNT(id)
+FROM harmonix_business.portfolio_profiles
+WHERE author_id = $1
 `
 
-type CreatePAdvisorParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	AdvisorID   pgtype.Text `json:"advisor_id"`
+func (q *Queries) CountProfilesInUserPortfolioProfile(ctx context.Context, authorID string) (int64, error) {
+	row := q.db.QueryRow(ctx, countProfilesInUserPortfolioProfile, authorID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
-func (q *Queries) CreatePAdvisor(ctx context.Context, arg CreatePAdvisorParams) (HamonixBusinessPAdvisor, error) {
-	row := q.db.QueryRow(ctx, createPAdvisor, arg.PortfolioID, arg.AdvisorID)
-	var i HamonixBusinessPAdvisor
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.AdvisorID)
-	return i, err
-}
-
-const createPBranch = `-- name: CreatePBranch :one
-INSERT INTO hamonix_business.p_branches (
-  portfolio_id,
-  branch_id
-) VALUES (
-  $1, $2
-) RETURNING id, portfolio_id, branch_id
-`
-
-type CreatePBranchParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	BranchID    pgtype.Text `json:"branch_id"`
-}
-
-func (q *Queries) CreatePBranch(ctx context.Context, arg CreatePBranchParams) (HamonixBusinessPBranch, error) {
-	row := q.db.QueryRow(ctx, createPBranch, arg.PortfolioID, arg.BranchID)
-	var i HamonixBusinessPBranch
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.BranchID)
-	return i, err
-}
-
-const createPCategory = `-- name: CreatePCategory :one
-INSERT INTO hamonix_business.p_categories (
-  portfolio_id,
-  category_id
-) VALUES (
-  $1, $2
-) RETURNING id, portfolio_id, category_id
-`
-
-type CreatePCategoryParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	CategoryID  pgtype.Text `json:"category_id"`
-}
-
-func (q *Queries) CreatePCategory(ctx context.Context, arg CreatePCategoryParams) (HamonixBusinessPCategory, error) {
-	row := q.db.QueryRow(ctx, createPCategory, arg.PortfolioID, arg.CategoryID)
-	var i HamonixBusinessPCategory
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.CategoryID)
-	return i, err
-}
-
-const createPOrganization = `-- name: CreatePOrganization :one
-INSERT INTO hamonix_business.p_organizations (
-  portfolio_id,
-  organization_id
-) VALUES (
-  $1, $2
-) RETURNING id, portfolio_id, organization_id
-`
-
-type CreatePOrganizationParams struct {
-	PortfolioID    string      `json:"portfolio_id"`
-	OrganizationID pgtype.Text `json:"organization_id"`
-}
-
-func (q *Queries) CreatePOrganization(ctx context.Context, arg CreatePOrganizationParams) (HamonixBusinessPOrganization, error) {
-	row := q.db.QueryRow(ctx, createPOrganization, arg.PortfolioID, arg.OrganizationID)
-	var i HamonixBusinessPOrganization
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.OrganizationID)
-	return i, err
-}
-
-const createPortfolio = `-- name: CreatePortfolio :one
-INSERT INTO hamonix_business.portfolios (
+const createPortfolioProfile = `-- name: CreatePortfolioProfile :one
+INSERT INTO harmonix_business.portfolio_profiles (
   id,
   name,
   privacy,
-  author_id
+  author_id,
+  advisors,
+  branches,
+  organizations,
+  accounts,
+  expected_return,
+  is_new_buy_point
 ) VALUES (
-  $1, $2, $3, $4
-) RETURNING id, name, privacy, author_id, created_at, updated_at
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
 `
 
-type CreatePortfolioParams struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Privacy  string `json:"privacy"`
-	AuthorID string `json:"author_id"`
+type CreatePortfolioProfileParams struct {
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Privacy        string   `json:"privacy"`
+	AuthorID       string   `json:"author_id"`
+	Advisors       []string `json:"advisors"`
+	Branches       []string `json:"branches"`
+	Organizations  []string `json:"organizations"`
+	Accounts       []string `json:"accounts"`
+	ExpectedReturn float64  `json:"expected_return"`
+	IsNewBuyPoint  bool     `json:"is_new_buy_point"`
 }
 
-func (q *Queries) CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (HamonixBusinessPortfolio, error) {
-	row := q.db.QueryRow(ctx, createPortfolio,
+func (q *Queries) CreatePortfolioProfile(ctx context.Context, arg CreatePortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, createPortfolioProfile,
 		arg.ID,
 		arg.Name,
 		arg.Privacy,
 		arg.AuthorID,
+		arg.Advisors,
+		arg.Branches,
+		arg.Organizations,
+		arg.Accounts,
+		arg.ExpectedReturn,
+		arg.IsNewBuyPoint,
 	)
-	var i HamonixBusinessPortfolio
+	var i HarmonixBusinessPortfolioProfile
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Privacy,
 		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const deleteAsset = `-- name: DeleteAsset :exec
-DELETE FROM hamonix_business.assets
-WHERE portfolio_id = $1 AND ticker_id = $2
-`
-
-type DeleteAssetParams struct {
-	PortfolioID string `json:"portfolio_id"`
-	TickerID    int32  `json:"ticker_id"`
-}
-
-func (q *Queries) DeleteAsset(ctx context.Context, arg DeleteAssetParams) error {
-	_, err := q.db.Exec(ctx, deleteAsset, arg.PortfolioID, arg.TickerID)
-	return err
-}
-
-const deletePAdvisor = `-- name: DeletePAdvisor :exec
-DELETE FROM hamonix_business.p_advisors
-WHERE portfolio_id = $1 AND advisor_id = $2
-`
-
-type DeletePAdvisorParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	AdvisorID   pgtype.Text `json:"advisor_id"`
-}
-
-func (q *Queries) DeletePAdvisor(ctx context.Context, arg DeletePAdvisorParams) error {
-	_, err := q.db.Exec(ctx, deletePAdvisor, arg.PortfolioID, arg.AdvisorID)
-	return err
-}
-
-const deletePBranch = `-- name: DeletePBranch :exec
-DELETE FROM hamonix_business.p_branches
-WHERE portfolio_id = $1 AND branch_id = $2
-`
-
-type DeletePBranchParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	BranchID    pgtype.Text `json:"branch_id"`
-}
-
-func (q *Queries) DeletePBranch(ctx context.Context, arg DeletePBranchParams) error {
-	_, err := q.db.Exec(ctx, deletePBranch, arg.PortfolioID, arg.BranchID)
-	return err
-}
-
-const deletePCategory = `-- name: DeletePCategory :exec
-DELETE FROM hamonix_business.p_categories
-WHERE portfolio_id = $1 AND category_id = $2
-`
-
-type DeletePCategoryParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	CategoryID  pgtype.Text `json:"category_id"`
-}
-
-func (q *Queries) DeletePCategory(ctx context.Context, arg DeletePCategoryParams) error {
-	_, err := q.db.Exec(ctx, deletePCategory, arg.PortfolioID, arg.CategoryID)
-	return err
-}
-
-const deletePOrganization = `-- name: DeletePOrganization :exec
-DELETE FROM hamonix_business.p_organizations
-WHERE portfolio_id = $1 AND organization_id = $2
-`
-
-type DeletePOrganizationParams struct {
-	PortfolioID    string      `json:"portfolio_id"`
-	OrganizationID pgtype.Text `json:"organization_id"`
-}
-
-func (q *Queries) DeletePOrganization(ctx context.Context, arg DeletePOrganizationParams) error {
-	_, err := q.db.Exec(ctx, deletePOrganization, arg.PortfolioID, arg.OrganizationID)
-	return err
-}
-
-const deletePortfolio = `-- name: DeletePortfolio :exec
-DELETE FROM hamonix_business.portfolios
+const deletePortfolioProfile = `-- name: DeletePortfolioProfile :exec
+DELETE FROM harmonix_business.portfolio_profiles
 WHERE id = $1
 `
 
-func (q *Queries) DeletePortfolio(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deletePortfolio, id)
+func (q *Queries) DeletePortfolioProfile(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, deletePortfolioProfile, id)
 	return err
 }
 
-const getAssetsByPortfolioId = `-- name: GetAssetsByPortfolioId :many
-SELECT id, portfolio_id, ticker_id, price, allocation FROM hamonix_business.assets
-WHERE portfolio_id = $1
+const getListAdvisorsBranchesOrganizationsByProfileId = `-- name: GetListAdvisorsBranchesOrganizationsByProfileId :many
+SELECT advisors, branches, organizations, accounts
+FROM harmonix_business.portfolio_profiles
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetAssetsByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessAsset, error) {
-	rows, err := q.db.Query(ctx, getAssetsByPortfolioId, portfolioID)
+type GetListAdvisorsBranchesOrganizationsByProfileIdRow struct {
+	Advisors      []string `json:"advisors"`
+	Branches      []string `json:"branches"`
+	Organizations []string `json:"organizations"`
+	Accounts      []string `json:"accounts"`
+}
+
+func (q *Queries) GetListAdvisorsBranchesOrganizationsByProfileId(ctx context.Context, id string) ([]GetListAdvisorsBranchesOrganizationsByProfileIdRow, error) {
+	rows, err := q.db.Query(ctx, getListAdvisorsBranchesOrganizationsByProfileId, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []HamonixBusinessAsset{}
+	items := []GetListAdvisorsBranchesOrganizationsByProfileIdRow{}
 	for rows.Next() {
-		var i HamonixBusinessAsset
+		var i GetListAdvisorsBranchesOrganizationsByProfileIdRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.PortfolioID,
-			&i.TickerID,
-			&i.Price,
-			&i.Allocation,
+			&i.Advisors,
+			&i.Branches,
+			&i.Organizations,
+			&i.Accounts,
 		); err != nil {
 			return nil, err
 		}
@@ -284,24 +147,33 @@ func (q *Queries) GetAssetsByPortfolioId(ctx context.Context, portfolioID string
 	return items, nil
 }
 
-const getListAdvisorPAdvisorsByPortfolioId = `-- name: GetListAdvisorPAdvisorsByPortfolioId :many
-SELECT advisor_id FROM hamonix_business.p_advisors
-WHERE portfolio_id = $1
+const getListProfileIdByUserId = `-- name: GetListProfileIdByUserId :many
+SELECT id FROM harmonix_business.portfolio_profiles
+WHERE author_id = $1
+ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetListAdvisorPAdvisorsByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getListAdvisorPAdvisorsByPortfolioId, portfolioID)
+type GetListProfileIdByUserIdParams struct {
+	AuthorID string `json:"author_id"`
+	Limit    int32  `json:"limit"`
+	Offset   int32  `json:"offset"`
+}
+
+func (q *Queries) GetListProfileIdByUserId(ctx context.Context, arg GetListProfileIdByUserIdParams) ([]string, error) {
+	rows, err := q.db.Query(ctx, getListProfileIdByUserId, arg.AuthorID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []pgtype.Text{}
+	items := []string{}
 	for rows.Next() {
-		var advisor_id pgtype.Text
-		if err := rows.Scan(&advisor_id); err != nil {
+		var id string
+		if err := rows.Scan(&id); err != nil {
 			return nil, err
 		}
-		items = append(items, advisor_id)
+		items = append(items, id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -309,341 +181,305 @@ func (q *Queries) GetListAdvisorPAdvisorsByPortfolioId(ctx context.Context, port
 	return items, nil
 }
 
-const getListBranchPBranchByPortfolioId = `-- name: GetListBranchPBranchByPortfolioId :many
-SELECT branch_id FROM hamonix_business.p_branches
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetListBranchPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getListBranchPBranchByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []pgtype.Text{}
-	for rows.Next() {
-		var branch_id pgtype.Text
-		if err := rows.Scan(&branch_id); err != nil {
-			return nil, err
-		}
-		items = append(items, branch_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getListCategoryPCategoryByPortfolioId = `-- name: GetListCategoryPCategoryByPortfolioId :many
-SELECT category_id FROM hamonix_business.p_categories
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetListCategoryPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getListCategoryPCategoryByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []pgtype.Text{}
-	for rows.Next() {
-		var category_id pgtype.Text
-		if err := rows.Scan(&category_id); err != nil {
-			return nil, err
-		}
-		items = append(items, category_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getListOrganizationPOrganizationByPortfolioId = `-- name: GetListOrganizationPOrganizationByPortfolioId :many
-SELECT organization_id FROM hamonix_business.p_organizations
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetListOrganizationPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getListOrganizationPOrganizationByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []pgtype.Text{}
-	for rows.Next() {
-		var organization_id pgtype.Text
-		if err := rows.Scan(&organization_id); err != nil {
-			return nil, err
-		}
-		items = append(items, organization_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPAdvisorByPortfolioId = `-- name: GetPAdvisorByPortfolioId :many
-SELECT id, portfolio_id, advisor_id FROM hamonix_business.p_advisors
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetPAdvisorByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPAdvisor, error) {
-	rows, err := q.db.Query(ctx, getPAdvisorByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []HamonixBusinessPAdvisor{}
-	for rows.Next() {
-		var i HamonixBusinessPAdvisor
-		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.AdvisorID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPBranchByPortfolioId = `-- name: GetPBranchByPortfolioId :many
-SELECT id, portfolio_id, branch_id FROM hamonix_business.p_branches
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetPBranchByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPBranch, error) {
-	rows, err := q.db.Query(ctx, getPBranchByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []HamonixBusinessPBranch{}
-	for rows.Next() {
-		var i HamonixBusinessPBranch
-		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.BranchID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPCategoryByPortfolioId = `-- name: GetPCategoryByPortfolioId :many
-SELECT id, portfolio_id, category_id FROM hamonix_business.p_categories
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetPCategoryByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPCategory, error) {
-	rows, err := q.db.Query(ctx, getPCategoryByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []HamonixBusinessPCategory{}
-	for rows.Next() {
-		var i HamonixBusinessPCategory
-		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.CategoryID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPOrganizationByPortfolioId = `-- name: GetPOrganizationByPortfolioId :many
-SELECT id, portfolio_id, organization_id FROM hamonix_business.p_organizations
-WHERE portfolio_id = $1
-`
-
-func (q *Queries) GetPOrganizationByPortfolioId(ctx context.Context, portfolioID string) ([]HamonixBusinessPOrganization, error) {
-	rows, err := q.db.Query(ctx, getPOrganizationByPortfolioId, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []HamonixBusinessPOrganization{}
-	for rows.Next() {
-		var i HamonixBusinessPOrganization
-		if err := rows.Scan(&i.ID, &i.PortfolioID, &i.OrganizationID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getProfilesByPortfolioId = `-- name: GetProfilesByPortfolioId :one
-SELECT id, name, privacy, author_id, created_at, updated_at FROM hamonix_business.portfolios
+const getPrivacyProfileById = `-- name: GetPrivacyProfileById :one
+SELECT privacy FROM harmonix_business.portfolio_profiles
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetProfilesByPortfolioId(ctx context.Context, id string) (HamonixBusinessPortfolio, error) {
-	row := q.db.QueryRow(ctx, getProfilesByPortfolioId, id)
-	var i HamonixBusinessPortfolio
+func (q *Queries) GetPrivacyProfileById(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRow(ctx, getPrivacyProfileById, id)
+	var privacy string
+	err := row.Scan(&privacy)
+	return privacy, err
+}
+
+const getProfileInfoById = `-- name: GetProfileInfoById :one
+SELECT id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at FROM harmonix_business.portfolio_profiles
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetProfileInfoById(ctx context.Context, id string) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, getProfileInfoById, id)
+	var i HarmonixBusinessPortfolioProfile
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Privacy,
 		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const updateAsset = `-- name: UpdateAsset :one
-UPDATE hamonix_business.assets
+const updateAccountsPortfolioProfile = `-- name: UpdateAccountsPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
-  price = $3,
-  allocation = $4
-WHERE portfolio_id = $1 AND ticker_id = $2
-RETURNING id, portfolio_id, ticker_id, price, allocation
-`
-
-type UpdateAssetParams struct {
-	PortfolioID string  `json:"portfolio_id"`
-	TickerID    int32   `json:"ticker_id"`
-	Price       float64 `json:"price"`
-	Allocation  float64 `json:"allocation"`
-}
-
-func (q *Queries) UpdateAsset(ctx context.Context, arg UpdateAssetParams) (HamonixBusinessAsset, error) {
-	row := q.db.QueryRow(ctx, updateAsset,
-		arg.PortfolioID,
-		arg.TickerID,
-		arg.Price,
-		arg.Allocation,
-	)
-	var i HamonixBusinessAsset
-	err := row.Scan(
-		&i.ID,
-		&i.PortfolioID,
-		&i.TickerID,
-		&i.Price,
-		&i.Allocation,
-	)
-	return i, err
-}
-
-const updatePAdvisor = `-- name: UpdatePAdvisor :one
-UPDATE hamonix_business.p_advisors
-SET
-  advisor_id = $3
-WHERE portfolio_id = $1 AND advisor_id = $2
-RETURNING id, portfolio_id, advisor_id
-`
-
-type UpdatePAdvisorParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	AdvisorID   pgtype.Text `json:"advisor_id"`
-	AdvisorID_2 pgtype.Text `json:"advisor_id_2"`
-}
-
-func (q *Queries) UpdatePAdvisor(ctx context.Context, arg UpdatePAdvisorParams) (HamonixBusinessPAdvisor, error) {
-	row := q.db.QueryRow(ctx, updatePAdvisor, arg.PortfolioID, arg.AdvisorID, arg.AdvisorID_2)
-	var i HamonixBusinessPAdvisor
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.AdvisorID)
-	return i, err
-}
-
-const updatePBranch = `-- name: UpdatePBranch :one
-UPDATE hamonix_business.p_branches
-SET
-  branch_id = $3
-WHERE portfolio_id = $1 AND branch_id = $2
-RETURNING id, portfolio_id, branch_id
-`
-
-type UpdatePBranchParams struct {
-	PortfolioID string      `json:"portfolio_id"`
-	BranchID    pgtype.Text `json:"branch_id"`
-	BranchID_2  pgtype.Text `json:"branch_id_2"`
-}
-
-func (q *Queries) UpdatePBranch(ctx context.Context, arg UpdatePBranchParams) (HamonixBusinessPBranch, error) {
-	row := q.db.QueryRow(ctx, updatePBranch, arg.PortfolioID, arg.BranchID, arg.BranchID_2)
-	var i HamonixBusinessPBranch
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.BranchID)
-	return i, err
-}
-
-const updatePCategory = `-- name: UpdatePCategory :one
-UPDATE hamonix_business.p_categories
-SET
-  category_id = $3
-WHERE portfolio_id = $1 AND category_id = $2
-RETURNING id, portfolio_id, category_id
-`
-
-type UpdatePCategoryParams struct {
-	PortfolioID  string      `json:"portfolio_id"`
-	CategoryID   pgtype.Text `json:"category_id"`
-	CategoryID_2 pgtype.Text `json:"category_id_2"`
-}
-
-func (q *Queries) UpdatePCategory(ctx context.Context, arg UpdatePCategoryParams) (HamonixBusinessPCategory, error) {
-	row := q.db.QueryRow(ctx, updatePCategory, arg.PortfolioID, arg.CategoryID, arg.CategoryID_2)
-	var i HamonixBusinessPCategory
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.CategoryID)
-	return i, err
-}
-
-const updatePOrganization = `-- name: UpdatePOrganization :one
-UPDATE hamonix_business.p_organizations
-SET
-  organization_id = $3
-WHERE portfolio_id = $1 AND organization_id = $2
-RETURNING id, portfolio_id, organization_id
-`
-
-type UpdatePOrganizationParams struct {
-	PortfolioID      string      `json:"portfolio_id"`
-	OrganizationID   pgtype.Text `json:"organization_id"`
-	OrganizationID_2 pgtype.Text `json:"organization_id_2"`
-}
-
-func (q *Queries) UpdatePOrganization(ctx context.Context, arg UpdatePOrganizationParams) (HamonixBusinessPOrganization, error) {
-	row := q.db.QueryRow(ctx, updatePOrganization, arg.PortfolioID, arg.OrganizationID, arg.OrganizationID_2)
-	var i HamonixBusinessPOrganization
-	err := row.Scan(&i.ID, &i.PortfolioID, &i.OrganizationID)
-	return i, err
-}
-
-const updatePortfolio = `-- name: UpdatePortfolio :one
-UPDATE hamonix_business.portfolios
-SET
-  name = $2,
-  privacy = $3
+  accounts = $2
 WHERE id = $1
-RETURNING id, name, privacy, author_id, created_at, updated_at
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
 `
 
-type UpdatePortfolioParams struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Privacy string `json:"privacy"`
+type UpdateAccountsPortfolioProfileParams struct {
+	ID       string   `json:"id"`
+	Accounts []string `json:"accounts"`
 }
 
-func (q *Queries) UpdatePortfolio(ctx context.Context, arg UpdatePortfolioParams) (HamonixBusinessPortfolio, error) {
-	row := q.db.QueryRow(ctx, updatePortfolio, arg.ID, arg.Name, arg.Privacy)
-	var i HamonixBusinessPortfolio
+func (q *Queries) UpdateAccountsPortfolioProfile(ctx context.Context, arg UpdateAccountsPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateAccountsPortfolioProfile, arg.ID, arg.Accounts)
+	var i HarmonixBusinessPortfolioProfile
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Privacy,
 		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateAdvisorsPortfolioProfile = `-- name: UpdateAdvisorsPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  advisors = $2
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdateAdvisorsPortfolioProfileParams struct {
+	ID       string   `json:"id"`
+	Advisors []string `json:"advisors"`
+}
+
+func (q *Queries) UpdateAdvisorsPortfolioProfile(ctx context.Context, arg UpdateAdvisorsPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateAdvisorsPortfolioProfile, arg.ID, arg.Advisors)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateBranchesPortfolioProfile = `-- name: UpdateBranchesPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  branches = $2
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdateBranchesPortfolioProfileParams struct {
+	ID       string   `json:"id"`
+	Branches []string `json:"branches"`
+}
+
+func (q *Queries) UpdateBranchesPortfolioProfile(ctx context.Context, arg UpdateBranchesPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateBranchesPortfolioProfile, arg.ID, arg.Branches)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateExpectedReturnPortfolioProfile = `-- name: UpdateExpectedReturnPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  expected_return = $2
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdateExpectedReturnPortfolioProfileParams struct {
+	ID             string  `json:"id"`
+	ExpectedReturn float64 `json:"expected_return"`
+}
+
+func (q *Queries) UpdateExpectedReturnPortfolioProfile(ctx context.Context, arg UpdateExpectedReturnPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateExpectedReturnPortfolioProfile, arg.ID, arg.ExpectedReturn)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateIsNewBuyPointPortfolioProfile = `-- name: UpdateIsNewBuyPointPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  is_new_buy_point = $2
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdateIsNewBuyPointPortfolioProfileParams struct {
+	ID            string `json:"id"`
+	IsNewBuyPoint bool   `json:"is_new_buy_point"`
+}
+
+func (q *Queries) UpdateIsNewBuyPointPortfolioProfile(ctx context.Context, arg UpdateIsNewBuyPointPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateIsNewBuyPointPortfolioProfile, arg.ID, arg.IsNewBuyPoint)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateNamePortfolioProfile = `-- name: UpdateNamePortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  name = $2,
+  updated_at = $3
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdateNamePortfolioProfileParams struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q *Queries) UpdateNamePortfolioProfile(ctx context.Context, arg UpdateNamePortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateNamePortfolioProfile, arg.ID, arg.Name, arg.UpdatedAt)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateOrganizationsPortfolioProfile = `-- name: UpdateOrganizationsPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  organizations = $2
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdateOrganizationsPortfolioProfileParams struct {
+	ID            string   `json:"id"`
+	Organizations []string `json:"organizations"`
+}
+
+func (q *Queries) UpdateOrganizationsPortfolioProfile(ctx context.Context, arg UpdateOrganizationsPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updateOrganizationsPortfolioProfile, arg.ID, arg.Organizations)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePrivacyPortfolioProfile = `-- name: UpdatePrivacyPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  privacy = $2,
+  updated_at = $3
+WHERE id = $1
+RETURNING id, name, privacy, author_id, advisors, branches, organizations, accounts, expected_return, is_new_buy_point, created_at, updated_at
+`
+
+type UpdatePrivacyPortfolioProfileParams struct {
+	ID        string    `json:"id"`
+	Privacy   string    `json:"privacy"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q *Queries) UpdatePrivacyPortfolioProfile(ctx context.Context, arg UpdatePrivacyPortfolioProfileParams) (HarmonixBusinessPortfolioProfile, error) {
+	row := q.db.QueryRow(ctx, updatePrivacyPortfolioProfile, arg.ID, arg.Privacy, arg.UpdatedAt)
+	var i HarmonixBusinessPortfolioProfile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Privacy,
+		&i.AuthorID,
+		&i.Advisors,
+		&i.Branches,
+		&i.Organizations,
+		&i.Accounts,
+		&i.ExpectedReturn,
+		&i.IsNewBuyPoint,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

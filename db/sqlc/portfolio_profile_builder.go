@@ -1,7 +1,7 @@
 package db
 
 import (
-	rd_portfolio_rpc "portfolio-profile-rpc/rd_portfolio_profile_rpc"
+	"portfolio-profile-rpc/rd_portfolio_rpc"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -88,7 +88,7 @@ func (u *UpdatePortfolioProfileTxParamsBuilder) WithAccounts(accounts []*wrapper
 }
 
 // ExpectedReturn
-func (u *UpdatePortfolioProfileTxParamsBuilder) WithExpectedReturn(expectedReturn *wrapperspb.DoubleValue ) *UpdatePortfolioProfileTxParamsBuilder {
+func (u *UpdatePortfolioProfileTxParamsBuilder) WithExpectedReturn(expectedReturn *wrapperspb.DoubleValue) *UpdatePortfolioProfileTxParamsBuilder {
 	if expectedReturn == nil {
 		u.updateProfileTxParams.ExpectedReturn = nil
 		return u
@@ -99,7 +99,7 @@ func (u *UpdatePortfolioProfileTxParamsBuilder) WithExpectedReturn(expectedRetur
 }
 
 // IsNewBuyPoint
-func (u *UpdatePortfolioProfileTxParamsBuilder) WithIsNewBuyPoint(isNewBuyPoint *wrapperspb.BoolValue  ) *UpdatePortfolioProfileTxParamsBuilder {
+func (u *UpdatePortfolioProfileTxParamsBuilder) WithIsNewBuyPoint(isNewBuyPoint *wrapperspb.BoolValue) *UpdatePortfolioProfileTxParamsBuilder {
 	if isNewBuyPoint == nil {
 		u.updateProfileTxParams.IsNewBuyPoint = nil
 		return u
@@ -118,7 +118,7 @@ func (u *UpdatePortfolioProfileTxParamsBuilder) WithAssets(assets []*rd_portfoli
 
 	for _, value := range assets {
 		u.updateProfileTxParams.Assets = append(u.updateProfileTxParams.Assets, &ProfileAsset{
-			TickerName:   value.TickerName.GetValue(),
+			TickerName: value.TickerName.GetValue(),
 			Allocation: value.Allocation.GetValue(),
 			Price:      value.Price.GetValue(),
 		})

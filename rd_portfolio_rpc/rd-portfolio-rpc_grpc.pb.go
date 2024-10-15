@@ -19,24 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RdPortfolioRpc_Ping_FullMethodName                             = "/rd_portfolio_rpc.RdPortfolioRpc/Ping"
-	RdPortfolioRpc_GetOpt_FullMethodName                           = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpt"
-	RdPortfolioRpc_CreateOpt_FullMethodName                        = "/rd_portfolio_rpc.RdPortfolioRpc/CreateOpt"
-	RdPortfolioRpc_GetOpts_FullMethodName                          = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpts"
-	RdPortfolioRpc_CreatePortfolioProfile_FullMethodName           = "/rd_portfolio_rpc.RdPortfolioRpc/CreatePortfolioProfile"
-	RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName           = "/rd_portfolio_rpc.RdPortfolioRpc/UpdatePortfolioProfile"
-	RdPortfolioRpc_DeletePortfolioProfile_FullMethodName           = "/rd_portfolio_rpc.RdPortfolioRpc/DeletePortfolioProfile"
-	RdPortfolioRpc_GetBranchByID_FullMethodName                    = "/rd_portfolio_rpc.RdPortfolioRpc/GetBranchByID"
-	RdPortfolioRpc_GetOrganizationByID_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/GetOrganizationByID"
-	RdPortfolioRpc_GetAdvisorByID_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/GetAdvisorByID"
-	RdPortfolioRpc_GetProfileByUserID_FullMethodName               = "/rd_portfolio_rpc.RdPortfolioRpc/GetProfileByUserID"
-	RdPortfolioRpc_GetDetailProfile_FullMethodName                 = "/rd_portfolio_rpc.RdPortfolioRpc/GetDetailProfile"
-	RdPortfolioRpc_CreateCategory_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/CreateCategory"
-	RdPortfolioRpc_UpdateCategory_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/UpdateCategory"
-	RdPortfolioRpc_DeleteCategory_FullMethodName                   = "/rd_portfolio_rpc.RdPortfolioRpc/DeleteCategory"
-	RdPortfolioRpc_GetCategoryByUserID_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/GetCategoryByUserID"
-	RdPortfolioRpc_RemovePortfolioProfileInCategory_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/RemovePortfolioProfileInCategory"
-	RdPortfolioRpc_GetDetailCategogy_FullMethodName                = "/rd_portfolio_rpc.RdPortfolioRpc/GetDetailCategogy"
+	RdPortfolioRpc_Ping_FullMethodName                          = "/rd_portfolio_rpc.RdPortfolioRpc/Ping"
+	RdPortfolioRpc_GetOpt_FullMethodName                        = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpt"
+	RdPortfolioRpc_CreateOpt_FullMethodName                     = "/rd_portfolio_rpc.RdPortfolioRpc/CreateOpt"
+	RdPortfolioRpc_GetOpts_FullMethodName                       = "/rd_portfolio_rpc.RdPortfolioRpc/GetOpts"
+	RdPortfolioRpc_CreatePortfolioProfile_FullMethodName        = "/rd_portfolio_rpc.RdPortfolioRpc/CreatePortfolioProfile"
+	RdPortfolioRpc_UpdatePortfolioProfile_FullMethodName        = "/rd_portfolio_rpc.RdPortfolioRpc/UpdatePortfolioProfile"
+	RdPortfolioRpc_DeletePortfolioProfile_FullMethodName        = "/rd_portfolio_rpc.RdPortfolioRpc/DeletePortfolioProfile"
+	RdPortfolioRpc_GetProfileByUserID_FullMethodName            = "/rd_portfolio_rpc.RdPortfolioRpc/GetProfileByUserID"
+	RdPortfolioRpc_GetDetailProfile_FullMethodName              = "/rd_portfolio_rpc.RdPortfolioRpc/GetDetailProfile"
+	RdPortfolioRpc_LinkedProfileToListAccounts_FullMethodName   = "/rd_portfolio_rpc.RdPortfolioRpc/LinkedProfileToListAccounts"
+	RdPortfolioRpc_UnLinkedProfileToListAccounts_FullMethodName = "/rd_portfolio_rpc.RdPortfolioRpc/UnLinkedProfileToListAccounts"
+	RdPortfolioRpc_GetListLinkedProfileAccounts_FullMethodName  = "/rd_portfolio_rpc.RdPortfolioRpc/GetListLinkedProfileAccounts"
 )
 
 // RdPortfolioRpcClient is the client API for RdPortfolioRpc service.
@@ -51,17 +45,11 @@ type RdPortfolioRpcClient interface {
 	CreatePortfolioProfile(ctx context.Context, in *CreatePortfolioProfileRequest, opts ...grpc.CallOption) (*CreatePortfolioProfileResponse, error)
 	UpdatePortfolioProfile(ctx context.Context, in *UpdatePortfolioProfileRequest, opts ...grpc.CallOption) (*UpdatePortfolioProfileResponse, error)
 	DeletePortfolioProfile(ctx context.Context, in *DeletePortfolioProfileRequest, opts ...grpc.CallOption) (*DeletePortfolioProfileResponse, error)
-	GetBranchByID(ctx context.Context, in *GetBranchByIDRequest, opts ...grpc.CallOption) (*GetBranchByIDResponse, error)
-	GetOrganizationByID(ctx context.Context, in *GetOrganizationByIDRequest, opts ...grpc.CallOption) (*GetOrganizationByIDResponse, error)
-	GetAdvisorByID(ctx context.Context, in *GetAdvisorByIDRequest, opts ...grpc.CallOption) (*GetAdvisorByIDResponse, error)
 	GetProfileByUserID(ctx context.Context, in *GetProfileByUserIDRequest, opts ...grpc.CallOption) (*GetProfileByUserIDResponse, error)
 	GetDetailProfile(ctx context.Context, in *GetDetailProfileRequest, opts ...grpc.CallOption) (*GetDetailProfileResponse, error)
-	CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CreateCategoryResponse, error)
-	UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*UpdateCategoryResponse, error)
-	DeleteCategory(ctx context.Context, in *DeleteCategoryRequest, opts ...grpc.CallOption) (*DeleteCategoryResponse, error)
-	GetCategoryByUserID(ctx context.Context, in *GetCategoryByUserIDRequest, opts ...grpc.CallOption) (*GetCategoryByUserIDResponse, error)
-	RemovePortfolioProfileInCategory(ctx context.Context, in *RemovePortfolioProfileInCategoryRequest, opts ...grpc.CallOption) (*RemovePortfolioProfileInCategoryResponse, error)
-	GetDetailCategogy(ctx context.Context, in *GetDetailCategogyRequest, opts ...grpc.CallOption) (*GetDetailCategogyResponse, error)
+	LinkedProfileToListAccounts(ctx context.Context, in *LinkedProfileToListAccountsRequest, opts ...grpc.CallOption) (*LinkedProfileToListAccountsResponse, error)
+	UnLinkedProfileToListAccounts(ctx context.Context, in *UnLinkedProfileToListAccountsRequest, opts ...grpc.CallOption) (*UnLinkedProfileToListAccountsResponse, error)
+	GetListLinkedProfileAccounts(ctx context.Context, in *GetListLinkedProfileAccountsRequest, opts ...grpc.CallOption) (*GetListLinkedProfileAccountsResponse, error)
 }
 
 type rdPortfolioRpcClient struct {
@@ -142,36 +130,6 @@ func (c *rdPortfolioRpcClient) DeletePortfolioProfile(ctx context.Context, in *D
 	return out, nil
 }
 
-func (c *rdPortfolioRpcClient) GetBranchByID(ctx context.Context, in *GetBranchByIDRequest, opts ...grpc.CallOption) (*GetBranchByIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetBranchByIDResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetBranchByID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *rdPortfolioRpcClient) GetOrganizationByID(ctx context.Context, in *GetOrganizationByIDRequest, opts ...grpc.CallOption) (*GetOrganizationByIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetOrganizationByIDResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetOrganizationByID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *rdPortfolioRpcClient) GetAdvisorByID(ctx context.Context, in *GetAdvisorByIDRequest, opts ...grpc.CallOption) (*GetAdvisorByIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetAdvisorByIDResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetAdvisorByID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *rdPortfolioRpcClient) GetProfileByUserID(ctx context.Context, in *GetProfileByUserIDRequest, opts ...grpc.CallOption) (*GetProfileByUserIDResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetProfileByUserIDResponse)
@@ -192,60 +150,30 @@ func (c *rdPortfolioRpcClient) GetDetailProfile(ctx context.Context, in *GetDeta
 	return out, nil
 }
 
-func (c *rdPortfolioRpcClient) CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CreateCategoryResponse, error) {
+func (c *rdPortfolioRpcClient) LinkedProfileToListAccounts(ctx context.Context, in *LinkedProfileToListAccountsRequest, opts ...grpc.CallOption) (*LinkedProfileToListAccountsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateCategoryResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_CreateCategory_FullMethodName, in, out, cOpts...)
+	out := new(LinkedProfileToListAccountsResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_LinkedProfileToListAccounts_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *rdPortfolioRpcClient) UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*UpdateCategoryResponse, error) {
+func (c *rdPortfolioRpcClient) UnLinkedProfileToListAccounts(ctx context.Context, in *UnLinkedProfileToListAccountsRequest, opts ...grpc.CallOption) (*UnLinkedProfileToListAccountsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateCategoryResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_UpdateCategory_FullMethodName, in, out, cOpts...)
+	out := new(UnLinkedProfileToListAccountsResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_UnLinkedProfileToListAccounts_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *rdPortfolioRpcClient) DeleteCategory(ctx context.Context, in *DeleteCategoryRequest, opts ...grpc.CallOption) (*DeleteCategoryResponse, error) {
+func (c *rdPortfolioRpcClient) GetListLinkedProfileAccounts(ctx context.Context, in *GetListLinkedProfileAccountsRequest, opts ...grpc.CallOption) (*GetListLinkedProfileAccountsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteCategoryResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_DeleteCategory_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *rdPortfolioRpcClient) GetCategoryByUserID(ctx context.Context, in *GetCategoryByUserIDRequest, opts ...grpc.CallOption) (*GetCategoryByUserIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCategoryByUserIDResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetCategoryByUserID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *rdPortfolioRpcClient) RemovePortfolioProfileInCategory(ctx context.Context, in *RemovePortfolioProfileInCategoryRequest, opts ...grpc.CallOption) (*RemovePortfolioProfileInCategoryResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RemovePortfolioProfileInCategoryResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_RemovePortfolioProfileInCategory_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *rdPortfolioRpcClient) GetDetailCategogy(ctx context.Context, in *GetDetailCategogyRequest, opts ...grpc.CallOption) (*GetDetailCategogyResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetDetailCategogyResponse)
-	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetDetailCategogy_FullMethodName, in, out, cOpts...)
+	out := new(GetListLinkedProfileAccountsResponse)
+	err := c.cc.Invoke(ctx, RdPortfolioRpc_GetListLinkedProfileAccounts_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -264,17 +192,11 @@ type RdPortfolioRpcServer interface {
 	CreatePortfolioProfile(context.Context, *CreatePortfolioProfileRequest) (*CreatePortfolioProfileResponse, error)
 	UpdatePortfolioProfile(context.Context, *UpdatePortfolioProfileRequest) (*UpdatePortfolioProfileResponse, error)
 	DeletePortfolioProfile(context.Context, *DeletePortfolioProfileRequest) (*DeletePortfolioProfileResponse, error)
-	GetBranchByID(context.Context, *GetBranchByIDRequest) (*GetBranchByIDResponse, error)
-	GetOrganizationByID(context.Context, *GetOrganizationByIDRequest) (*GetOrganizationByIDResponse, error)
-	GetAdvisorByID(context.Context, *GetAdvisorByIDRequest) (*GetAdvisorByIDResponse, error)
 	GetProfileByUserID(context.Context, *GetProfileByUserIDRequest) (*GetProfileByUserIDResponse, error)
 	GetDetailProfile(context.Context, *GetDetailProfileRequest) (*GetDetailProfileResponse, error)
-	CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error)
-	UpdateCategory(context.Context, *UpdateCategoryRequest) (*UpdateCategoryResponse, error)
-	DeleteCategory(context.Context, *DeleteCategoryRequest) (*DeleteCategoryResponse, error)
-	GetCategoryByUserID(context.Context, *GetCategoryByUserIDRequest) (*GetCategoryByUserIDResponse, error)
-	RemovePortfolioProfileInCategory(context.Context, *RemovePortfolioProfileInCategoryRequest) (*RemovePortfolioProfileInCategoryResponse, error)
-	GetDetailCategogy(context.Context, *GetDetailCategogyRequest) (*GetDetailCategogyResponse, error)
+	LinkedProfileToListAccounts(context.Context, *LinkedProfileToListAccountsRequest) (*LinkedProfileToListAccountsResponse, error)
+	UnLinkedProfileToListAccounts(context.Context, *UnLinkedProfileToListAccountsRequest) (*UnLinkedProfileToListAccountsResponse, error)
+	GetListLinkedProfileAccounts(context.Context, *GetListLinkedProfileAccountsRequest) (*GetListLinkedProfileAccountsResponse, error)
 	mustEmbedUnimplementedRdPortfolioRpcServer()
 }
 
@@ -306,38 +228,20 @@ func (UnimplementedRdPortfolioRpcServer) UpdatePortfolioProfile(context.Context,
 func (UnimplementedRdPortfolioRpcServer) DeletePortfolioProfile(context.Context, *DeletePortfolioProfileRequest) (*DeletePortfolioProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePortfolioProfile not implemented")
 }
-func (UnimplementedRdPortfolioRpcServer) GetBranchByID(context.Context, *GetBranchByIDRequest) (*GetBranchByIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBranchByID not implemented")
-}
-func (UnimplementedRdPortfolioRpcServer) GetOrganizationByID(context.Context, *GetOrganizationByIDRequest) (*GetOrganizationByIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetOrganizationByID not implemented")
-}
-func (UnimplementedRdPortfolioRpcServer) GetAdvisorByID(context.Context, *GetAdvisorByIDRequest) (*GetAdvisorByIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAdvisorByID not implemented")
-}
 func (UnimplementedRdPortfolioRpcServer) GetProfileByUserID(context.Context, *GetProfileByUserIDRequest) (*GetProfileByUserIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileByUserID not implemented")
 }
 func (UnimplementedRdPortfolioRpcServer) GetDetailProfile(context.Context, *GetDetailProfileRequest) (*GetDetailProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDetailProfile not implemented")
 }
-func (UnimplementedRdPortfolioRpcServer) CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateCategory not implemented")
+func (UnimplementedRdPortfolioRpcServer) LinkedProfileToListAccounts(context.Context, *LinkedProfileToListAccountsRequest) (*LinkedProfileToListAccountsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LinkedProfileToListAccounts not implemented")
 }
-func (UnimplementedRdPortfolioRpcServer) UpdateCategory(context.Context, *UpdateCategoryRequest) (*UpdateCategoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateCategory not implemented")
+func (UnimplementedRdPortfolioRpcServer) UnLinkedProfileToListAccounts(context.Context, *UnLinkedProfileToListAccountsRequest) (*UnLinkedProfileToListAccountsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnLinkedProfileToListAccounts not implemented")
 }
-func (UnimplementedRdPortfolioRpcServer) DeleteCategory(context.Context, *DeleteCategoryRequest) (*DeleteCategoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteCategory not implemented")
-}
-func (UnimplementedRdPortfolioRpcServer) GetCategoryByUserID(context.Context, *GetCategoryByUserIDRequest) (*GetCategoryByUserIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCategoryByUserID not implemented")
-}
-func (UnimplementedRdPortfolioRpcServer) RemovePortfolioProfileInCategory(context.Context, *RemovePortfolioProfileInCategoryRequest) (*RemovePortfolioProfileInCategoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemovePortfolioProfileInCategory not implemented")
-}
-func (UnimplementedRdPortfolioRpcServer) GetDetailCategogy(context.Context, *GetDetailCategogyRequest) (*GetDetailCategogyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDetailCategogy not implemented")
+func (UnimplementedRdPortfolioRpcServer) GetListLinkedProfileAccounts(context.Context, *GetListLinkedProfileAccountsRequest) (*GetListLinkedProfileAccountsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListLinkedProfileAccounts not implemented")
 }
 func (UnimplementedRdPortfolioRpcServer) mustEmbedUnimplementedRdPortfolioRpcServer() {}
 func (UnimplementedRdPortfolioRpcServer) testEmbeddedByValue()                        {}
@@ -486,60 +390,6 @@ func _RdPortfolioRpc_DeletePortfolioProfile_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RdPortfolioRpc_GetBranchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBranchByIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).GetBranchByID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RdPortfolioRpc_GetBranchByID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).GetBranchByID(ctx, req.(*GetBranchByIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RdPortfolioRpc_GetOrganizationByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetOrganizationByIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).GetOrganizationByID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RdPortfolioRpc_GetOrganizationByID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).GetOrganizationByID(ctx, req.(*GetOrganizationByIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RdPortfolioRpc_GetAdvisorByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAdvisorByIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).GetAdvisorByID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RdPortfolioRpc_GetAdvisorByID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).GetAdvisorByID(ctx, req.(*GetAdvisorByIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _RdPortfolioRpc_GetProfileByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetProfileByUserIDRequest)
 	if err := dec(in); err != nil {
@@ -576,110 +426,56 @@ func _RdPortfolioRpc_GetDetailProfile_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RdPortfolioRpc_CreateCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateCategoryRequest)
+func _RdPortfolioRpc_LinkedProfileToListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LinkedProfileToListAccountsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).CreateCategory(ctx, in)
+		return srv.(RdPortfolioRpcServer).LinkedProfileToListAccounts(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RdPortfolioRpc_CreateCategory_FullMethodName,
+		FullMethod: RdPortfolioRpc_LinkedProfileToListAccounts_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).CreateCategory(ctx, req.(*CreateCategoryRequest))
+		return srv.(RdPortfolioRpcServer).LinkedProfileToListAccounts(ctx, req.(*LinkedProfileToListAccountsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RdPortfolioRpc_UpdateCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateCategoryRequest)
+func _RdPortfolioRpc_UnLinkedProfileToListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnLinkedProfileToListAccountsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).UpdateCategory(ctx, in)
+		return srv.(RdPortfolioRpcServer).UnLinkedProfileToListAccounts(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RdPortfolioRpc_UpdateCategory_FullMethodName,
+		FullMethod: RdPortfolioRpc_UnLinkedProfileToListAccounts_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).UpdateCategory(ctx, req.(*UpdateCategoryRequest))
+		return srv.(RdPortfolioRpcServer).UnLinkedProfileToListAccounts(ctx, req.(*UnLinkedProfileToListAccountsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RdPortfolioRpc_DeleteCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteCategoryRequest)
+func _RdPortfolioRpc_GetListLinkedProfileAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetListLinkedProfileAccountsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).DeleteCategory(ctx, in)
+		return srv.(RdPortfolioRpcServer).GetListLinkedProfileAccounts(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RdPortfolioRpc_DeleteCategory_FullMethodName,
+		FullMethod: RdPortfolioRpc_GetListLinkedProfileAccounts_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).DeleteCategory(ctx, req.(*DeleteCategoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RdPortfolioRpc_GetCategoryByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCategoryByUserIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).GetCategoryByUserID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RdPortfolioRpc_GetCategoryByUserID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).GetCategoryByUserID(ctx, req.(*GetCategoryByUserIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RdPortfolioRpc_RemovePortfolioProfileInCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemovePortfolioProfileInCategoryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).RemovePortfolioProfileInCategory(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RdPortfolioRpc_RemovePortfolioProfileInCategory_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).RemovePortfolioProfileInCategory(ctx, req.(*RemovePortfolioProfileInCategoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RdPortfolioRpc_GetDetailCategogy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDetailCategogyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RdPortfolioRpcServer).GetDetailCategogy(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RdPortfolioRpc_GetDetailCategogy_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RdPortfolioRpcServer).GetDetailCategogy(ctx, req.(*GetDetailCategogyRequest))
+		return srv.(RdPortfolioRpcServer).GetListLinkedProfileAccounts(ctx, req.(*GetListLinkedProfileAccountsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -720,18 +516,6 @@ var RdPortfolioRpc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RdPortfolioRpc_DeletePortfolioProfile_Handler,
 		},
 		{
-			MethodName: "GetBranchByID",
-			Handler:    _RdPortfolioRpc_GetBranchByID_Handler,
-		},
-		{
-			MethodName: "GetOrganizationByID",
-			Handler:    _RdPortfolioRpc_GetOrganizationByID_Handler,
-		},
-		{
-			MethodName: "GetAdvisorByID",
-			Handler:    _RdPortfolioRpc_GetAdvisorByID_Handler,
-		},
-		{
 			MethodName: "GetProfileByUserID",
 			Handler:    _RdPortfolioRpc_GetProfileByUserID_Handler,
 		},
@@ -740,28 +524,16 @@ var RdPortfolioRpc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RdPortfolioRpc_GetDetailProfile_Handler,
 		},
 		{
-			MethodName: "CreateCategory",
-			Handler:    _RdPortfolioRpc_CreateCategory_Handler,
+			MethodName: "LinkedProfileToListAccounts",
+			Handler:    _RdPortfolioRpc_LinkedProfileToListAccounts_Handler,
 		},
 		{
-			MethodName: "UpdateCategory",
-			Handler:    _RdPortfolioRpc_UpdateCategory_Handler,
+			MethodName: "UnLinkedProfileToListAccounts",
+			Handler:    _RdPortfolioRpc_UnLinkedProfileToListAccounts_Handler,
 		},
 		{
-			MethodName: "DeleteCategory",
-			Handler:    _RdPortfolioRpc_DeleteCategory_Handler,
-		},
-		{
-			MethodName: "GetCategoryByUserID",
-			Handler:    _RdPortfolioRpc_GetCategoryByUserID_Handler,
-		},
-		{
-			MethodName: "RemovePortfolioProfileInCategory",
-			Handler:    _RdPortfolioRpc_RemovePortfolioProfileInCategory_Handler,
-		},
-		{
-			MethodName: "GetDetailCategogy",
-			Handler:    _RdPortfolioRpc_GetDetailCategogy_Handler,
+			MethodName: "GetListLinkedProfileAccounts",
+			Handler:    _RdPortfolioRpc_GetListLinkedProfileAccounts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

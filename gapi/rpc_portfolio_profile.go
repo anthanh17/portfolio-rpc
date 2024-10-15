@@ -7,7 +7,8 @@ import (
 	"math"
 	cache "portfolio-profile-rpc/caching"
 	db "portfolio-profile-rpc/db/sqlc"
-	rd_portfolio_rpc "portfolio-profile-rpc/rd_portfolio_profile_rpc"
+	"portfolio-profile-rpc/rd_portfolio_rpc"
+
 	"portfolio-profile-rpc/util"
 
 	"google.golang.org/grpc/codes"

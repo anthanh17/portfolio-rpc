@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 	db "portfolio-profile-rpc/db/sqlc"
-	rd_portfolio_rpc "portfolio-profile-rpc/rd_portfolio_profile_rpc"
+	"portfolio-profile-rpc/rd_portfolio_rpc"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
