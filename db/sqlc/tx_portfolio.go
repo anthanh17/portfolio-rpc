@@ -2,149 +2,153 @@ package db
 
 import (
 	"context"
-	"errors"
 	"portfolio-profile-rpc/util"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const (
+	PrivacyPublic    = "PUBLIC"
+	PrivacyPrivate   = "PRIVATE"
+	PrivacyProtected = "PROTECTED"
+)
+
+type ProfileAsset struct {
+	TickerName string
+	Allocation float64
+	Price      float64
+}
+
 // CREATE
-type PortfolioAsset struct {
-	TickerId   int64   `json:"ticker_id,omitempty"`
-	Allocation float64 `json:"allocation"`
-	Price      float64 `json:"price"`
+type CreatePortfolioProfileTxParams struct {
+	ProfileName    string
+	Privacy        string
+	AuthorId       string
+	Advisors       []string
+	Branches       []string
+	Organizations  []string
+	Accounts       []string
+	ExpectedReturn float64
+	IsNewBuyPoint  bool
+	Assets         []*ProfileAsset
 }
 
-type CreatePortfolioTxParams struct {
-	CategoryID     []string          `json:"category_id"`
-	PortfolioName  string            `json:"portfolio_name"`
-	OrganizationId []string          `json:"organization_id"`
-	BranchId       []string          `json:"branch_id"`
-	AdvisorId      []string          `json:"advisor_id"`
-	Assets         []*PortfolioAsset `json:"assets"`
-	Privacy        string            `json:"privacy"`
-	AuthorID       string            `json:"author_id"`
+type CreatePortfolioProfileTxResult struct {
+	ProfileId string
 }
 
-type CreatePortfolioTxResult struct {
-	PortfolioID string `json:"portfolio_id"`
-}
-
-func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfolioTxParams) (CreatePortfolioTxResult, error) {
-	var result CreatePortfolioTxResult
-	portfolioId := uuid.New().String()
+func (store *SQLStore) CreatePortfolioProfileTx(ctx context.Context, arg CreatePortfolioProfileTxParams) (CreatePortfolioProfileTxResult, error) {
+	var result CreatePortfolioProfileTxResult
+	profileId := uuid.New().String()
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
-		// table: u_portfolio
-		argUPortfolio := CreateUserPortfolioParams{
-			UserID: arg.AuthorID,
-			PortfolioID: pgtype.Text{
-				String: portfolioId,
-				Valid:  true,
-			},
-		}
-		_, err = q.CreateUserPortfolio(ctx, argUPortfolio)
-		if err != nil {
-			return errors.New("error CreateUserPortfolio " + err.Error())
+		// table: portfolio_profiles
+		var argPortfolioProfiles CreatePortfolioProfileParams
+		if arg.Privacy == PrivacyPrivate || arg.Privacy == PrivacyProtected {
+
+			// id, err := util.EncryptData([]byte(profileId), []byte(store.secretKeyEncryption))
+			// if err != nil {
+			// 	store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - EncryptData - id: %v", err)
+			// 	return err
+			// }
+
+			name, err := util.EncryptData([]byte(arg.ProfileName), []byte(store.secretKeyEncryption))
+			if err != nil {
+				store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - EncryptData - name: %v", err)
+				return err
+			}
+
+			var advisors []string
+			for _, value := range arg.Advisors {
+				advisor, err := util.EncryptData([]byte(value), []byte(store.secretKeyEncryption))
+				if err != nil {
+					store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - EncryptData - advisors: %v", err)
+					return err
+				}
+				advisors = append(advisors, advisor)
+			}
+
+			var branches []string
+			for _, value := range arg.Branches {
+				branch, err := util.EncryptData([]byte(value), []byte(store.secretKeyEncryption))
+				if err != nil {
+					store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - EncryptData - branches: %v", err)
+					return err
+				}
+				branches = append(branches, branch)
+			}
+
+			var organizations []string
+			for _, value := range arg.Organizations {
+				organization, err := util.EncryptData([]byte(value), []byte(store.secretKeyEncryption))
+				if err != nil {
+					store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - EncryptData - organizations: %v", err)
+					return err
+				}
+				organizations = append(organizations, organization)
+			}
+
+			var accounts []string
+			for _, value := range arg.Accounts {
+				account, err := util.EncryptData([]byte(value), []byte(store.secretKeyEncryption))
+				if err != nil {
+					store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - EncryptData - accounts: %v", err)
+					return err
+				}
+				accounts = append(accounts, account)
+			}
+
+			argPortfolioProfiles = CreatePortfolioProfileParams{
+				ID:             profileId,
+				Name:           name,
+				Privacy:        arg.Privacy,
+				AuthorID:       arg.AuthorId,
+				Advisors:       advisors,
+				Branches:       branches,
+				Organizations:  organizations,
+				Accounts:       accounts,
+				ExpectedReturn: arg.ExpectedReturn,
+				IsNewBuyPoint:  arg.IsNewBuyPoint,
+			}
+
+		} else {
+			argPortfolioProfiles = CreatePortfolioProfileParams{
+				ID:             profileId,
+				Name:           arg.ProfileName,
+				Privacy:        arg.Privacy,
+				AuthorID:       arg.AuthorId,
+				Advisors:       arg.Advisors,
+				Branches:       arg.Branches,
+				Organizations:  arg.Organizations,
+				Accounts:       arg.Accounts,
+				ExpectedReturn: arg.ExpectedReturn,
+				IsNewBuyPoint:  arg.IsNewBuyPoint,
+			}
 		}
 
-		// table: portfolios
-		argPortfolio := CreatePortfolioParams{
-			ID:       portfolioId,
-			Name:     arg.PortfolioName,
-			Privacy:  arg.Privacy,
-			AuthorID: arg.AuthorID,
-		}
-
-		_, err = q.CreatePortfolio(ctx, argPortfolio)
+		_, err = q.CreatePortfolioProfile(ctx, argPortfolioProfiles)
 		if err != nil {
-			return errors.New("error CreatePortfolio " + err.Error())
+			store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - CreatePortfolioProfile: %v", err)
+			return err
 		}
 
 		// table: assets
 		if len(arg.Assets) > 0 {
 			for _, asset := range arg.Assets {
 				argAssest := CreateAssetParams{
-					PortfolioID: portfolioId,
-					TickerID:    int32(asset.TickerId),
-					Price:       asset.Price,
-					Allocation:  asset.Allocation,
+					PortfolioProfileID: profileId,
+					TickerName:         asset.TickerName,
+					Price:              asset.Price,
+					Allocation:         asset.Allocation,
 				}
 
 				_, err := q.CreateAsset(ctx, argAssest)
 				if err != nil {
-					return errors.New("error CreateAsset " + err.Error())
-				}
-			}
-		}
-
-		// table: p_categories
-		if len(arg.CategoryID) > 0 {
-			for _, category := range arg.CategoryID {
-				argPCategory := CreatePCategoryParams{
-					PortfolioID: portfolioId,
-					CategoryID: pgtype.Text{
-						String: category,
-						Valid:  true,
-					},
-				}
-				_, err = q.CreatePCategory(ctx, argPCategory)
-				if err != nil {
-					return errors.New("error CreatePCategory " + err.Error())
-				}
-			}
-		}
-
-		// table: p_branches
-		if len(arg.BranchId) > 0 {
-			for _, branch := range arg.BranchId {
-				argPBranch := CreatePBranchParams{
-					PortfolioID: portfolioId,
-					BranchID: pgtype.Text{
-						String: branch,
-						Valid:  true,
-					},
-				}
-				_, err = q.CreatePBranch(ctx, argPBranch)
-				if err != nil {
-					return errors.New("error CreatePBranch " + err.Error())
-				}
-			}
-		}
-
-		// table: p_advisors
-		if len(arg.AdvisorId) > 0 {
-			for _, advisor := range arg.AdvisorId {
-				argPAdvisor := CreatePAdvisorParams{
-					PortfolioID: portfolioId,
-					AdvisorID: pgtype.Text{
-						String: advisor,
-						Valid:  true,
-					},
-				}
-				_, err = q.CreatePAdvisor(ctx, argPAdvisor)
-				if err != nil {
-					return errors.New("error CreatePAdvisor " + err.Error())
-				}
-			}
-		}
-
-		// table: p_organizations
-		if len(arg.OrganizationId) > 0 {
-			for _, organization := range arg.OrganizationId {
-				argPOrganization := CreatePOrganizationParams{
-					PortfolioID: portfolioId,
-					OrganizationID: pgtype.Text{
-						String: organization,
-						Valid:  true,
-					},
-				}
-				_, err = q.CreatePOrganization(ctx, argPOrganization)
-				if err != nil {
-					return errors.New("error CreatePOrganization " + err.Error())
+					store.logger.Sugar().Infof("\n error CreatePortfolioProfileTx - CreateAsset: %v", err)
+					return err
 				}
 			}
 		}
@@ -152,490 +156,432 @@ func (store *SQLStore) CreatePortfolioTx(ctx context.Context, arg CreatePortfoli
 		return err
 	})
 
-	result.PortfolioID = portfolioId
+	result.ProfileId = profileId
 	return result, err
 }
 
 // UPDATE
-type UpdatePortfolioTxParams struct {
-	PortfolioID    string            `json:"portfolio_id"`
-	PortfolioName  string            `json:"portfolio_name"`
-	CategoryID     []string          `json:"category_id"`
-	OrganizationId []string          `json:"organization_id"`
-	BranchId       []string          `json:"branch_id"`
-	AdvisorId      []string          `json:"advisor_id"`
-	Assets         []*PortfolioAsset `json:"assets"`
-	Privacy        string            `json:"privacy"`
+type UpdatePortfolioProfileTxParams struct {
+	ProfileId      string
+	ProfileName    *string
+	Privacy        *string
+	Advisors       []*string
+	Branches       []*string
+	Organizations  []*string
+	Accounts       []*string
+	ExpectedReturn *float64
+	IsNewBuyPoint  *bool
+	Assets         []*ProfileAsset
+	Hashtags       []*string
 }
 
-type UpdatePortfolioTxResult struct {
-	PortfolioID string `json:"portfolio_id"`
+type UpdatePortfolioProfileTxResult struct {
+	ProfileId string
 }
 
-func (store *SQLStore) UpdatePortfolioTx(ctx context.Context, arg UpdatePortfolioTxParams) (UpdatePortfolioTxResult, error) {
-	var result UpdatePortfolioTxResult
+func (store *SQLStore) UpdatePortfolioProfileTx(ctx context.Context, arg UpdatePortfolioProfileTxParams) (UpdatePortfolioProfileTxResult, error) {
+	var result UpdatePortfolioProfileTxResult
 
 	/*
 		- error channel hold err:
-			- p_categories
-			- p_branches
-			- p_advisors
-			- p_organizations
+			- assets
 	*/
-	errGet := make(chan error, 4)
+	errGet := make(chan error, 2)
 
-	// GetPCategoryByPortfolioId
-	addPCategoriesCh := make(chan []string)
-	removePCategoriesCh := make(chan []string)
-	go func() {
-		categories, err := store.GetPCategoryByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
+	// Assest
+	assetIdsCh := make(chan []int64)
+	var assetIds []int64
 
-		currentCategories := make([]string, len(categories))
-		// convert categories to currentCategories
-		for i, c := range categories {
-			currentCategories[i] = c.CategoryID.String
-		}
+	if arg.Assets != nil {
+		go func() {
+			// get all ticker
+			assetIds, err := store.GetListAssetIdsByPortfolioId(ctx, arg.ProfileId)
+			errGet <- err
 
-		add, remove := util.FindDifferences(currentCategories, arg.CategoryID)
+			// push data to channel
+			assetIdsCh <- assetIds
+		}()
+	}
 
-		// push data to channel
-		addPCategoriesCh <- add
-		removePCategoriesCh <- remove
-	}()
-
-	// GetPBranchByPortfolioId
-	addPBranchesCh := make(chan []string)
-	removePBranchesCh := make(chan []string)
-	go func() {
-		branches, err := store.GetPBranchByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		currentBranches := make([]string, len(branches))
-		// convert branches to currentBranches
-		for i, b := range branches {
-			currentBranches[i] = b.BranchID.String
-		}
-
-		add, remove := util.FindDifferences(currentBranches, arg.BranchId)
-		// push data to channel
-		addPBranchesCh <- add
-		removePBranchesCh <- remove
-	}()
-
-	// GetPAdvisorByPortfolioId
-	addPAdvisorsCh := make(chan []string)
-	removePAdvisorsCh := make(chan []string)
-	go func() {
-		advisors, err := store.GetPAdvisorByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		currentAdvisors := make([]string, len(advisors))
-		// convert advisors to currentAdvisors
-		for i, a := range advisors {
-			currentAdvisors[i] = a.AdvisorID.String
-		}
-
-		add, remove := util.FindDifferences(currentAdvisors, arg.AdvisorId)
-		// push data to channel
-		addPAdvisorsCh <- add
-		removePAdvisorsCh <- remove
-	}()
-
-	// GetPOrganizationByPortfolioId
-	addPOrganizationsCh := make(chan []string)
-	removePOrganizationsCh := make(chan []string)
-	go func() {
-		organizations, err := store.GetPOrganizationByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		currentOrganizations := make([]string, len(organizations))
-		// convert organizations to currentOrganizations
-		for i, o := range organizations {
-			currentOrganizations[i] = o.OrganizationID.String
-		}
-
-		add, remove := util.FindDifferences(currentOrganizations, arg.OrganizationId)
-		// push data to channel
-		addPOrganizationsCh <- add
-		removePOrganizationsCh <- remove
-	}()
-
-	addPCategories, removePCategories := <-addPCategoriesCh, <-removePCategoriesCh
-	addPBranches, removePBranches := <-addPBranchesCh, <-removePBranchesCh
-	addPAdvisors, removePAdvisors := <-addPAdvisorsCh, <-removePAdvisorsCh
-	addPOrganizations, removePOrganizations := <-addPOrganizationsCh, <-removePOrganizationsCh
+	// assets
+	if arg.Assets != nil {
+		assetIds = <-assetIdsCh
+	}
 
 	close(errGet)
-	// Collect and handle errors
+	// collect and handle errors
 	for err := range errGet {
 		if err != nil {
+			store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx: %v", err)
 			return result, err
 		}
 	}
 
+	// --------------- Start transaction --------------------
 	err := store.execTx(ctx, func(q *Queries) error {
-		var err error
-
-		// table: portfolios
-		argPortfolio := UpdatePortfolioParams{
-			ID:      arg.PortfolioID,
-			Name:    arg.PortfolioName,
-			Privacy: arg.Privacy,
+		// table: portfolios profile
+		privacy, err := q.GetPrivacyProfileById(ctx, arg.ProfileId)
+		if err != nil {
+			store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - GetPrivacyProfileById: %v", err)
+			return err
 		}
 
-		_, err = q.UpdatePortfolio(ctx, argPortfolio)
-		if err != nil {
-			return errors.New("error UpdatePortfolio " + err.Error())
+		// check update name portfolio
+		if arg.ProfileName != nil {
+			var argPortfolio UpdateNamePortfolioProfileParams
+			if privacy == PrivacyPrivate || privacy == PrivacyProtected {
+				name, err := util.EncryptData([]byte(*arg.ProfileName), []byte(store.secretKeyEncryption))
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - EncryptData - name: %v", err)
+					return err
+				}
+
+				argPortfolio = UpdateNamePortfolioProfileParams{
+					ID:        arg.ProfileId,
+					Name:      name,
+					UpdatedAt: time.Now(),
+				}
+			} else {
+				argPortfolio = UpdateNamePortfolioProfileParams{
+					ID:        arg.ProfileId,
+					Name:      *arg.ProfileName,
+					UpdatedAt: time.Now(),
+				}
+			}
+
+			_, err := q.UpdateNamePortfolioProfile(ctx, argPortfolio)
+			if err != nil {
+				store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateNamePortfolioProfile: %v", err)
+				return err
+			}
+		}
+
+		// check update privacy portfolio
+		if arg.Privacy != nil {
+			argPortfolio := UpdatePrivacyPortfolioProfileParams{
+				ID:        arg.ProfileId,
+				Privacy:   *arg.Privacy,
+				UpdatedAt: time.Now(),
+			}
+
+			_, err := q.UpdatePrivacyPortfolioProfile(ctx, argPortfolio)
+			if err != nil {
+				store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdatePrivacyPortfolioProfile: %v", err)
+				return err
+			}
+		}
+
+		// update advisors
+		if arg.Advisors != nil {
+			// case: user pass update empty array
+			if *arg.Advisors[0] == "" {
+				arg := UpdateAdvisorsPortfolioProfileParams{
+					ID:       arg.ProfileId,
+					Advisors: []string{},
+				}
+				_, err := q.UpdateAdvisorsPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateAdvisorsPortfolioProfile: %v", err)
+					return err
+				}
+			} else {
+				var advisors []string
+				if privacy == PrivacyPrivate || privacy == PrivacyProtected {
+					for _, value := range arg.Advisors {
+						advisor, err := util.EncryptData([]byte(*value), []byte(store.secretKeyEncryption))
+						if err != nil {
+							store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - EncryptData - advisors: %v", err)
+							return err
+						}
+						advisors = append(advisors, advisor)
+					}
+				} else {
+					for _, value := range arg.Advisors {
+						advisors = append(advisors, *value)
+					}
+				}
+
+				arg := UpdateAdvisorsPortfolioProfileParams{
+					ID:       arg.ProfileId,
+					Advisors: advisors,
+				}
+				_, err := q.UpdateAdvisorsPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateAdvisorsPortfolioProfile: %v", err)
+					return err
+				}
+			}
+		}
+
+		// update branches
+		if arg.Branches != nil {
+			// case: user pass update empty array
+			if *arg.Branches[0] == "" {
+				arg := UpdateBranchesPortfolioProfileParams{
+					ID:       arg.ProfileId,
+					Branches: []string{},
+				}
+				_, err := q.UpdateBranchesPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateBranchesPortfolioProfile: %v", err)
+					return err
+				}
+			} else {
+				var branches []string
+				if privacy == PrivacyPrivate || privacy == PrivacyProtected {
+					for _, value := range arg.Branches {
+						branch, err := util.EncryptData([]byte(*value), []byte(store.secretKeyEncryption))
+						if err != nil {
+							store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - EncryptData - branches: %v", err)
+							return err
+						}
+						branches = append(branches, branch)
+					}
+				} else {
+					for _, value := range arg.Branches {
+						branches = append(branches, *value)
+					}
+				}
+
+				arg := UpdateBranchesPortfolioProfileParams{
+					ID:       arg.ProfileId,
+					Branches: branches,
+				}
+				_, err := q.UpdateBranchesPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateBranchesPortfolioProfile: %v", err)
+					return err
+				}
+			}
+		}
+
+		// update organizations
+		if arg.Organizations != nil {
+			// case: user pass update empty array
+			if *arg.Organizations[0] == "" {
+				arg := UpdateOrganizationsPortfolioProfileParams{
+					ID:            arg.ProfileId,
+					Organizations: []string{},
+				}
+				_, err := q.UpdateOrganizationsPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateOrganizationsPortfolioProfile: %v", err)
+					return err
+				}
+			} else {
+				var organizations []string
+				if privacy == PrivacyPrivate || privacy == PrivacyProtected {
+					for _, value := range arg.Organizations {
+						organization, err := util.EncryptData([]byte(*value), []byte(store.secretKeyEncryption))
+						if err != nil {
+							store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - EncryptData - organizations: %v", err)
+							return err
+						}
+						organizations = append(organizations, organization)
+					}
+				} else {
+					for _, value := range arg.Organizations {
+						organizations = append(organizations, *value)
+					}
+				}
+
+				arg := UpdateOrganizationsPortfolioProfileParams{
+					ID:            arg.ProfileId,
+					Organizations: organizations,
+				}
+				_, err := q.UpdateOrganizationsPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateOrganizationsPortfolioProfile: %v", err)
+					return err
+				}
+			}
+		}
+
+		// update accounts
+		if arg.Accounts != nil {
+			// case: user pass update empty array
+			if *arg.Accounts[0] == "" {
+				arg := UpdateAccountsPortfolioProfileParams{
+					ID:       arg.ProfileId,
+					Accounts: []string{},
+				}
+				_, err := q.UpdateAccountsPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateAccountsPortfolioProfile: %v", err)
+					return err
+				}
+			} else {
+				var accounts []string
+				if privacy == PrivacyPrivate || privacy == PrivacyProtected {
+					for _, value := range arg.Accounts {
+						account, err := util.EncryptData([]byte(*value), []byte(store.secretKeyEncryption))
+						if err != nil {
+							store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - EncryptData - accounts: %v", err)
+							return err
+						}
+						accounts = append(accounts, account)
+					}
+				} else {
+					for _, value := range arg.Accounts {
+						accounts = append(accounts, *value)
+					}
+				}
+
+				arg := UpdateAccountsPortfolioProfileParams{
+					ID:       arg.ProfileId,
+					Accounts: accounts,
+				}
+				_, err := q.UpdateAccountsPortfolioProfile(ctx, arg)
+				if err != nil {
+					store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateAccountsPortfolioProfile: %v", err)
+					return err
+				}
+			}
+		}
+
+		// update expected_return
+		if arg.ExpectedReturn != nil {
+			arg := UpdateExpectedReturnPortfolioProfileParams{
+				ID:             arg.ProfileId,
+				ExpectedReturn: *arg.ExpectedReturn,
+			}
+			_, err := q.UpdateExpectedReturnPortfolioProfile(ctx, arg)
+			if err != nil {
+				store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateExpectedReturnPortfolioProfile: %v", err)
+				return err
+			}
+		}
+
+		// update is_new_buy_point
+		if arg.IsNewBuyPoint != nil {
+			arg := UpdateIsNewBuyPointPortfolioProfileParams{
+				ID:            arg.ProfileId,
+				IsNewBuyPoint: *arg.IsNewBuyPoint,
+			}
+			_, err := q.UpdateIsNewBuyPointPortfolioProfile(ctx, arg)
+			if err != nil {
+				store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - UpdateIsNewBuyPointPortfolioProfile: %v", err)
+				return err
+			}
 		}
 
 		// table: assets
-		if len(arg.Assets) > 0 {
-			for _, asset := range arg.Assets {
-				argAssest := UpdateAssetParams{
-					PortfolioID: arg.PortfolioID,
-					TickerID:    int32(asset.TickerId),
-					Price:       asset.Price,
-					Allocation:  asset.Allocation,
+		if arg.Assets != nil {
+			// delete assets current
+			if len(assetIds) > 0 {
+				for _, id := range assetIds {
+					err := q.DeleteListAssetsById(ctx, id)
+					if err != nil {
+						store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - DeleteListAssetsById: %v", err)
+						return err
+					}
 				}
+			}
 
-				_, err := q.UpdateAsset(ctx, argAssest)
-				if err != nil {
-					return errors.New("error UpdateAsset " + err.Error())
+			// check case update empty array
+			isAddUpdate := true
+			if arg.Assets[0].TickerName == "0" && arg.Assets[0].Price == 0.0 && arg.Assets[0].Allocation == 0.0 {
+				isAddUpdate = false
+			}
+
+			if isAddUpdate {
+				// add assets new
+				for _, asset := range arg.Assets {
+					argAssest := CreateAssetParams{
+						PortfolioProfileID: arg.ProfileId,
+						TickerName:         asset.TickerName,
+						Price:              asset.Price,
+						Allocation:         asset.Allocation,
+					}
+
+					_, err := q.CreateAsset(ctx, argAssest)
+					if err != nil {
+						store.logger.Sugar().Infof("\n error UpdatePortfolioProfileTx - CreateAsset: %v", err)
+						return err
+					}
 				}
 			}
 		}
 
-		// table: p_categories
-		if len(addPCategories) > 0 {
-			for _, value := range addPCategories {
-				argPOrganization := CreatePCategoryParams{
-					PortfolioID: arg.PortfolioID,
-					CategoryID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-				_, err = q.CreatePCategory(ctx, argPOrganization)
-				if err != nil {
-					return errors.New("error UpdatePCategory - CreatePCategory " + err.Error())
-				}
-			}
-		}
-
-		if len(removePCategories) > 0 {
-			for _, value := range removePCategories {
-				argPOrganization := DeletePCategoryParams{
-					PortfolioID: arg.PortfolioID,
-					CategoryID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePCategory(ctx, argPOrganization)
-				if err != nil {
-					return errors.New("error UpdatePCategory - DeletePCategory " + err.Error())
-				}
-			}
-		}
-
-		// table: p_branches
-		if len(addPBranches) > 0 {
-			for _, value := range addPBranches {
-				argPBranch := CreatePBranchParams{
-					PortfolioID: arg.PortfolioID,
-					BranchID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				_, err = q.CreatePBranch(ctx, argPBranch)
-				if err != nil {
-					return errors.New("error UpdatePBranch - CreatePBranch " + err.Error())
-				}
-			}
-		}
-
-		if len(removePBranches) > 0 {
-			for _, value := range removePBranches {
-				argPBranch := DeletePBranchParams{
-					PortfolioID: arg.PortfolioID,
-					BranchID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePBranch(ctx, argPBranch)
-				if err != nil {
-					return errors.New("error UpdatePBranch - DeletePBranch " + err.Error())
-				}
-			}
-		}
-
-		// table: p_advisors
-		if len(addPAdvisors) > 0 {
-			for _, value := range addPAdvisors {
-				argPAdvisor := CreatePAdvisorParams{
-					PortfolioID: arg.PortfolioID,
-					AdvisorID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				_, err = q.CreatePAdvisor(ctx, argPAdvisor)
-				if err != nil {
-					return errors.New("error UpdatePAdvisor - CreatePAdvisor " + err.Error())
-				}
-			}
-		}
-
-		if len(removePAdvisors) > 0 {
-			for _, value := range removePAdvisors {
-				argPAdvisor := DeletePAdvisorParams{
-					PortfolioID: arg.PortfolioID,
-					AdvisorID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePAdvisor(ctx, argPAdvisor)
-				if err != nil {
-					return errors.New("error UpdatePAdvisor - DeletePAdvisor " + err.Error())
-				}
-			}
-		}
-
-		// table: p_organizations
-		if len(addPOrganizations) > 0 {
-			for _, value := range addPOrganizations {
-				argPOrganization := CreatePOrganizationParams{
-					PortfolioID: arg.PortfolioID,
-					OrganizationID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				_, err = q.CreatePOrganization(ctx, argPOrganization)
-				if err != nil {
-					return errors.New("error UpdatePOrganization - CreatePOrganization " + err.Error())
-				}
-			}
-		}
-
-		if len(removePOrganizations) > 0 {
-			for _, value := range removePOrganizations {
-				argPOrganization := DeletePOrganizationParams{
-					PortfolioID: arg.PortfolioID,
-					OrganizationID: pgtype.Text{
-						String: value,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePOrganization(ctx, argPOrganization)
-				if err != nil {
-					return errors.New("error UpdatePOrganization - DeletePOrganization " + err.Error())
-				}
-			}
-		}
-
-		return err
+		return nil
 	})
 
-	result.PortfolioID = arg.PortfolioID
+	result.ProfileId = arg.ProfileId
 	return result, err
 }
 
 // DELETE
-type DeletePortfolioTxParams struct {
-	PortfolioID string `json:"portfolio_id"`
+type DeletePortfolioProfileTxParams struct {
+	ProfileId string
 }
 
-type DeletePortfolioTxResult struct {
-	PortfolioID string `json:"portfolio_id"`
+type DeletePortfolioProfileTxResult struct {
+	ProfileId string
 }
 
-func (store *SQLStore) DeletePortfolioTx(ctx context.Context, arg DeletePortfolioTxParams) (DeletePortfolioTxResult, error) {
-	var result DeletePortfolioTxResult
+func (store *SQLStore) DeletePortfolioProfileTx(ctx context.Context, arg DeletePortfolioProfileTxParams) (DeletePortfolioProfileTxResult, error) {
+	var result DeletePortfolioProfileTxResult
 
 	/*
 		- assets
-		- p_categories
-		- p_branches
-		- p_advisors
-		- p_organizations
 	*/
-	errGet := make(chan error, 5)
+	errGet := make(chan error, 2)
 
-	// GetAssetsByPortfolioId
-	assetsCh := make(chan []HamonixBusinessAsset)
+	// get list assets by profile id
+	assetsCh := make(chan []HarmonixBusinessAsset)
 	go func() {
-		assets, err := store.GetAssetsByPortfolioId(ctx, arg.PortfolioID)
+		assets, err := store.GetAssetsByProfileId(ctx, arg.ProfileId)
 		errGet <- err
 
 		// push data to channel
 		assetsCh <- assets
 	}()
 
-	// GetPCategoryByPortfolioId
-	categoriesCh := make(chan []HamonixBusinessPCategory)
-	go func() {
-		categories, err := store.GetPCategoryByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		// push data to channel
-		categoriesCh <- categories
-	}()
-
-	// GetPBranchByPortfolioId
-	branchesCh := make(chan []HamonixBusinessPBranch)
-	go func() {
-		branches, err := store.GetPBranchByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		// push data to channel
-		branchesCh <- branches
-	}()
-
-	// GetPAdvisorByPortfolioId
-	advisorsCh := make(chan []HamonixBusinessPAdvisor)
-	go func() {
-		advisors, err := store.GetPAdvisorByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		// push data to channel
-		advisorsCh <- advisors
-	}()
-
-	// GetPOrganizationByPortfolioId
-	organizationsCh := make(chan []HamonixBusinessPOrganization)
-	go func() {
-		organizations, err := store.GetPOrganizationByPortfolioId(ctx, arg.PortfolioID)
-		errGet <- err
-
-		// push data to channel
-		organizationsCh <- organizations
-	}()
-
 	assets := <-assetsCh
-	categories := <-categoriesCh
-	branches := <-branchesCh
-	advisors := <-advisorsCh
-	organizations := <-organizationsCh
 
 	close(errGet)
 	// Collect and handle errors
 	for err := range errGet {
 		if err != nil {
+			store.logger.Sugar().Infof("\n error DeletePortfolioProfileTx - errGet: %v", err)
 			return result, err
 		}
 	}
 
 	err := store.execTx(ctx, func(q *Queries) error {
-		var err error
-
-		// table: portfolios
-		err = q.DeletePortfolio(ctx, arg.PortfolioID)
+		// table: portfolio profile
+		err := q.DeletePortfolioProfile(ctx, arg.ProfileId)
 		if err != nil {
-			return errors.New("error DeletePortfolio " + err.Error())
+			store.logger.Sugar().Infof("\n error DeletePortfolioProfileTx - DeletePortfolioProfile: %v", err)
+			return err
 		}
 
 		// table: assets
 		if len(assets) > 0 {
 			for _, asset := range assets {
 				argAssest := DeleteAssetParams{
-					PortfolioID: asset.PortfolioID,
-					TickerID:    int32(asset.TickerID),
+					PortfolioProfileID: asset.PortfolioProfileID,
+					TickerName:         asset.TickerName,
 				}
 
 				err := q.DeleteAsset(ctx, argAssest)
 				if err != nil {
-					return errors.New("error DeleteAsset " + err.Error())
+					store.logger.Sugar().Infof("\n error DeletePortfolioProfileTx - DeleteAsset: %v", err)
+					return err
 				}
 			}
 		}
 
-		// table: p_categories
-		if len(categories) > 0 {
-			for _, category := range categories {
-				argPCategory := DeletePCategoryParams{
-					PortfolioID: category.PortfolioID,
-					CategoryID: pgtype.Text{
-						String: category.CategoryID.String,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePCategory(ctx, argPCategory)
-				if err != nil {
-					return errors.New("error DeletePCategory " + err.Error())
-				}
-			}
-		}
-
-		// table: p_branches
-		if len(branches) > 0 {
-			for _, branch := range branches {
-				argPBranch := DeletePBranchParams{
-					PortfolioID: branch.PortfolioID,
-					BranchID: pgtype.Text{
-						String: branch.BranchID.String,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePBranch(ctx, argPBranch)
-				if err != nil {
-					return errors.New("error DeletePBranch " + err.Error())
-				}
-			}
-		}
-
-		// table: p_advisors
-		if len(advisors) > 0 {
-			for _, advisor := range advisors {
-				argPAdvisor := DeletePAdvisorParams{
-					PortfolioID: advisor.PortfolioID,
-					AdvisorID: pgtype.Text{
-						String: advisor.AdvisorID.String,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePAdvisor(ctx, argPAdvisor)
-				if err != nil {
-					return errors.New("error DeletePAdvisor " + err.Error())
-				}
-			}
-		}
-
-		// table: p_organizations
-		if len(organizations) > 0 {
-			for _, organization := range organizations {
-				argPOrganization := DeletePOrganizationParams{
-					PortfolioID: organization.PortfolioID,
-					OrganizationID: pgtype.Text{
-						String: organization.OrganizationID.String,
-						Valid:  true,
-					},
-				}
-
-				err = q.DeletePOrganization(ctx, argPOrganization)
-				if err != nil {
-					return errors.New("error DeletePOrganization " + err.Error())
-				}
-			}
+		// table: hrn_profile_account
+		err = q.DeleteAllLinkedProfileAccountByProfileId(ctx, arg.ProfileId)
+		if err != nil {
+			store.logger.Sugar().Infof("\n error DeletePortfolioProfileTx - DeleteAllLinkedProfileAccountByProfileId: %v", err)
+			return err
 		}
 
 		return err
 	})
 
-	result.PortfolioID = arg.PortfolioID
+	result.ProfileId = arg.ProfileId
 	return result, err
 }

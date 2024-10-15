@@ -13,14 +13,9 @@ import (
 type Store interface {
 	Querier
 	// Extend more transactions
-	CreatePortfolioTx(ctx context.Context, arg CreatePortfolioTxParams) (CreatePortfolioTxResult, error)
-	UpdatePortfolioTx(ctx context.Context, arg UpdatePortfolioTxParams) (UpdatePortfolioTxResult, error)
-	DeletePortfolioTx(ctx context.Context, arg DeletePortfolioTxParams) (DeletePortfolioTxResult, error)
-
-	CreatePortfolioCategoryTx(ctx context.Context, arg CreatePortfolioCategoryTxParams) (CreatePortfolioCategoryTxResult, error)
-	UpdatePortfolioCategoryTx(ctx context.Context, arg UpdatePortfolioCategoryTxParams) (UpdatePortfolioCategoryTxResult, error)
-	DeletePortfolioCategoryTx(ctx context.Context, arg DeletePortfolioCategoryTxParams) (DeletePortfolioCategoryTxResult, error)
-	RemovePortfolioProfileInCategoryTx(ctx context.Context, arg RemovePortfolioProfileInCategoryTxParams) (RemovePortfolioProfileInCategoryTxResult, error)
+	CreatePortfolioProfileTx(ctx context.Context, arg CreatePortfolioProfileTxParams) (CreatePortfolioProfileTxResult, error)
+	UpdatePortfolioProfileTx(ctx context.Context, arg UpdatePortfolioProfileTxParams) (UpdatePortfolioProfileTxResult, error)
+	DeletePortfolioProfileTx(ctx context.Context, arg DeletePortfolioProfileTxParams) (DeletePortfolioProfileTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions
@@ -29,17 +24,24 @@ type SQLStore struct {
 	*Queries
 	// Extend more transactions
 	connPool *pgxpool.Pool
+
+	// Add logger
+	logger *zap.Logger
+
+	secretKeyEncryption string
 }
 
 // NewStore creates a new store
-func NewStore(connPool *pgxpool.Pool) Store {
+func NewStore(connPool *pgxpool.Pool, logger *zap.Logger, secretKeyEncryption string) Store {
 	return &SQLStore{
-		connPool: connPool,
-		Queries:  New(connPool),
+		connPool:            connPool,
+		Queries:             New(connPool),
+		logger:              logger,
+		secretKeyEncryption: secretKeyEncryption,
 	}
 }
 
-func InitializeUpDB(databaseConfig util.DatabaseConfig, logger *zap.Logger) (Store, func(), error) {
+func InitializeUpDB(databaseConfig util.DatabaseConfig, logger *zap.Logger, secretKeyEncryption string) (Store, func(), error) {
 	connectionString := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
 		databaseConfig.Username,
 		databaseConfig.Password,
@@ -55,7 +57,7 @@ func InitializeUpDB(databaseConfig util.DatabaseConfig, logger *zap.Logger) (Sto
 	}
 
 	// Create database accessor
-	store := NewStore(connPool)
+	store := NewStore(connPool, logger, secretKeyEncryption)
 
 	cleanup := func() {
 		connPool.Close()

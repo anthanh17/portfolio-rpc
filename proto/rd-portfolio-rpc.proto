@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/wrappers.proto";
 
 package rd_portfolio_rpc;
 option go_package="./rd-portfolio-rpc";
@@ -67,20 +68,23 @@ message GetPortfolioOptRes {
 }
 
 message PortfolioAsset {
-  int64 ticker_id = 1;
-  double allocation = 2;
-  double price = 3;
+  google.protobuf.StringValue ticker_name = 1;
+  google.protobuf.DoubleValue allocation = 2;
+  google.protobuf.DoubleValue price = 3;
 }
 
 message CreatePortfolioProfileRequest {
   string name = 1;
-  repeated string category_id = 2;
-  repeated string organization_id = 3;
-  repeated string branch_id = 4;
-  repeated string advisor_id = 5;
-  repeated PortfolioAsset assets = 6;
-  string privacy = 7;
-  string author_id = 8;
+  string privacy = 2;
+  string author_id = 3;
+  repeated string advisors = 4;
+  repeated string branches = 5;
+  repeated string organizations = 6;
+  repeated string accounts = 7;
+  double expected_return = 8;
+  bool is_new_buy_point = 9;
+  repeated PortfolioAsset assets = 10;
+  repeated string hashtags = 11;
 }
 
 message CreatePortfolioProfileResponse {
@@ -89,13 +93,16 @@ message CreatePortfolioProfileResponse {
 
 message UpdatePortfolioProfileRequest {
   string profile_id = 1;
-  string name = 2;
-  repeated string category_id = 3;
-  repeated string organization_id = 4;
-  repeated string branch_id = 5;
-  repeated string advisor_id = 6;
-  repeated PortfolioAsset assets = 7;
-  string privacy = 8;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue privacy = 3;
+  repeated google.protobuf.StringValue advisors = 4;
+  repeated google.protobuf.StringValue branches = 5;
+  repeated google.protobuf.StringValue organizations = 6;
+  repeated google.protobuf.StringValue accounts = 7;
+  google.protobuf.DoubleValue expected_return = 8;
+  google.protobuf.BoolValue is_new_buy_point = 9;
+  repeated PortfolioAsset assets = 10;
+  repeated google.protobuf.StringValue hashtags = 11;
 }
 
 message UpdatePortfolioProfileResponse {
@@ -110,47 +117,15 @@ message DeletePortfolioProfileResponse {
   bool status = 1;
 }
 
-message GetBranchByIDRequest {
-  string id = 1;
-}
-
-message GetBranchByIDResponse {
-  string id = 1;
-  string code = 2;
-  string description = 3;
-}
-
-message GetOrganizationByIDRequest {
-  string id = 1;
-}
-
-message GetOrganizationByIDResponse {
-  string id = 1;
-  string code = 2;
-  string backoffice_id = 3;
-  string description = 4;
-}
-
-message GetAdvisorByIDRequest {
-  string id = 1;
-}
-
-message GetAdvisorByIDResponse {
-  string id = 1;
-  string code = 2;
-  string description = 3;
-}
-
 message GetProfileByUserIDRequest {
   string user_id = 1;
-  string category_id = 2;
-  uint64 page = 3;
-  uint64 size = 4;
+  uint64 page = 2;
+  uint64 size = 3;
 }
 
 message TProfileValue  {
   repeated string headers = 1;
-  repeated string values = 2;
+  repeated double values = 2;
 }
 
 message Author  {
@@ -167,6 +142,13 @@ message TProfile {
   uint64 total_return = 6;
   uint64 updated_at = 7;
   uint64 created_at = 8;
+  double expected_return = 9;
+  bool is_new_buy_point = 10;
+  double profit_and_loss = 11;
+  uint64 stars = 12;
+  uint64 follows = 13;
+  uint64 copies = 14;
+  repeated string hashtags = 15;
 }
 
 
@@ -174,73 +156,10 @@ message GetProfileByUserIDResponse {
   repeated TProfile data = 1;
   uint64 total = 2;
   uint64 current_page = 3;
-  uint64 total_page = 4;
+  uint64 total_pages = 4;
 }
 
-message CreateCategoryRequest {
-  string user_id = 1;
-  string name = 2;
-  repeated string profile_ids = 3;
-}
 
-message CreateCategoryResponse {
-  string category_id = 1;
-}
-
-message UpdateCategoryRequest {
-  string category_id = 1;
-  string name = 2;
-  repeated string profile_ids = 3;
-}
-
-message UpdateCategoryResponse {
-  string name = 1;
-  repeated string profile_ids = 2;
-}
-
-message DeleteCategoryRequest {
-  string id = 1;
-}
-
-message DeleteCategoryResponse {
-  bool status = 1;
-}
-
-message GetCategoryByUserIDRequest {
-  string user_id = 1;
-  uint64 page = 2;
-  uint64 size = 3;
-}
-
-message CategoryData {
-  string id = 1;
-  string name = 2;
-  uint64 number_profile = 3;
-  uint64 created_at = 4;
-  uint64 updated_at = 5;
-}
-
-message GetCategoryByUserIDResponse {
-  repeated CategoryData data = 1;
-  uint64 total = 2;
-  uint64 current_page = 3;
-  uint64 total_page = 4;
-}
-
-message RemovePortfolioProfileInCategoryRequest {
-  string categogy_id = 1;
-  repeated string profile_ids = 2;
-}
-
-message RemovePortfolioProfileInCategoryResponse {
-  bool status = 1;
-}
-
-message GetDetailCategogyRequest {
-  string categogy_id = 1;
-  uint64 page = 2;
-  uint64 size = 3;
-}
 
 message TCProfile {
   string id = 1;
@@ -253,15 +172,6 @@ message TCProfile {
   uint64 updated_at = 8;
 }
 
-message GetDetailCategogyResponse {
-  string id = 1;
-  string name = 2;
-  repeated TCProfile profiles = 3;
-  uint64 total = 4;
-  uint64 current_page = 5;
-  uint64 total_page = 6;
-}
-
 message ObjInfo {
   string id = 1;
   string name = 2;
@@ -272,10 +182,9 @@ message GetDetailProfileRequest {
 }
 
 message AssetInfo {
-  uint64 ticker_id = 1;
-  string name = 2;
-  string description = 3;
-  double allocation = 4;
+  string ticker_name = 1;
+  string description = 2;
+  double allocation = 3;
 }
 
 message GetDetailProfileResponse {
@@ -283,14 +192,64 @@ message GetDetailProfileResponse {
   string name = 2;
   string privacy = 3;
   ObjInfo author = 4;
-  repeated ObjInfo category = 5;
-  repeated ObjInfo advisor = 8;
-  repeated ObjInfo branch = 9;
-  repeated ObjInfo organization = 10;
-  uint64 number_linked_accounts = 11;
-  repeated AssetInfo assets = 12;
-  uint64 created_at = 6;
-  uint64 updated_at = 7;
+  repeated string advisors = 5;
+  repeated string branches = 6;
+  repeated string organizations = 7;
+  repeated string accounts = 8;
+  uint64 number_linked_accounts = 9;
+  repeated AssetInfo assets = 10;
+  double expected_return = 11;
+  bool is_new_buy_point = 12;
+  double profit_and_loss = 13;
+  uint64 created_at = 14;
+  uint64 updated_at = 15;
+  repeated string hashtags = 16;
+  uint64 stars = 17;
+  uint64 follows = 18;
+  uint64 copies = 19;
+}
+
+message LinkedProfileToListAccountsRequest {
+  string profile_id = 1;
+  repeated string account_ids = 2;
+}
+
+message LinkedProfileToListAccountsResponse {
+  bool status = 1;
+}
+
+message UnLinkedProfileToListAccountsRequest {
+  string profile_id = 1;
+  repeated string account_ids = 2;
+}
+
+message UnLinkedProfileToListAccountsResponse {
+  bool status = 1;
+}
+
+message GetListLinkedProfileAccountsRequest {
+  string profile_id = 1;
+  uint64 page = 3;
+  uint64 size = 4;
+}
+
+message Chart {
+  string name = 1;
+  uint64 portfolio_profile = 2;
+  uint64 sp_asx = 3;
+}
+
+message LinkedAccounts {
+  string account_id = 1;
+  string account_name = 2;
+  repeated Chart charts = 3;
+}
+
+message GetListLinkedProfileAccountsResponse {
+  uint64 total = 1;
+  uint64 current_page = 2;
+  uint64 total_pages = 3;
+  repeated LinkedAccounts data = 4;
 }
 
 service RdPortfolioRpc {
@@ -304,17 +263,10 @@ service RdPortfolioRpc {
   rpc UpdatePortfolioProfile (UpdatePortfolioProfileRequest) returns (UpdatePortfolioProfileResponse) {}
   rpc DeletePortfolioProfile (DeletePortfolioProfileRequest) returns (DeletePortfolioProfileResponse) {}
 
-  rpc GetBranchByID (GetBranchByIDRequest) returns (GetBranchByIDResponse) {}
-  rpc GetOrganizationByID (GetOrganizationByIDRequest) returns (GetOrganizationByIDResponse) {}
-  rpc GetAdvisorByID (GetAdvisorByIDRequest) returns (GetAdvisorByIDResponse) {}
-
   rpc GetProfileByUserID (GetProfileByUserIDRequest) returns (GetProfileByUserIDResponse) {}
   rpc GetDetailProfile (GetDetailProfileRequest) returns (GetDetailProfileResponse) {}
 
-  rpc CreateCategory (CreateCategoryRequest) returns (CreateCategoryResponse) {}
-  rpc UpdateCategory (UpdateCategoryRequest) returns (UpdateCategoryResponse) {}
-  rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryResponse) {}
-  rpc GetCategoryByUserID (GetCategoryByUserIDRequest) returns (GetCategoryByUserIDResponse) {}
-  rpc RemovePortfolioProfileInCategory (RemovePortfolioProfileInCategoryRequest) returns (RemovePortfolioProfileInCategoryResponse) {}
-  rpc GetDetailCategogy (GetDetailCategogyRequest) returns (GetDetailCategogyResponse) {}
+  rpc LinkedProfileToListAccounts (LinkedProfileToListAccountsRequest) returns (LinkedProfileToListAccountsResponse) {}
+  rpc UnLinkedProfileToListAccounts (UnLinkedProfileToListAccountsRequest) returns (UnLinkedProfileToListAccountsResponse) {}
+  rpc GetListLinkedProfileAccounts (GetListLinkedProfileAccountsRequest) returns (GetListLinkedProfileAccountsResponse) {}
 }

@@ -7,21 +7,26 @@ import (
 	"github.com/spf13/viper"
 )
 
+type CacheType string
+
 // Config stores all configuration of the application.
 type Config struct {
 	Database DatabaseConfig
 	Mongo    MongoConfig
 	GRPC     GRPCConfig
-	Log      Log
+	Cache    CacheConfig
+	Log      LogConfig
+	Encrypt  EncryptConfig
 }
 
 // DatabaseConfig struct for database configuration
 type DatabaseConfig struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
-	Database string
+	Host       string
+	Port       int
+	Username   string
+	Password   string
+	Database   string
+	Encryption string
 }
 
 // MongoConfig struct for mongodb configuration
@@ -36,9 +41,25 @@ type GRPCConfig struct {
 	Address string
 }
 
-// GRPCConfig struct for GRPC server configuration
-type Log struct {
+// LogConfig struct for logging configuration
+// Level specifies the logging level, e.g. "info", "debug", "error".
+type LogConfig struct {
 	Level string
+}
+
+// CacheConfig struct for cache configuration
+type CacheConfig struct {
+	Type     CacheType
+	Host     string
+	Port     int
+	Username string
+	Password string
+}
+
+// EncryptConfig holds the configuration for encryption.
+// The Key field specifies the encryption key.
+type EncryptConfig struct {
+	Key string
 }
 
 func LoadConfig() (config Config, err error) {

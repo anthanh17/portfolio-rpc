@@ -1,159 +1,109 @@
--- name: CreatePortfolio :one
-INSERT INTO hamonix_business.portfolios (
+-- name: CreatePortfolioProfile :one
+INSERT INTO harmonix_business.portfolio_profiles (
   id,
   name,
   privacy,
-  author_id
+  author_id,
+  advisors,
+  branches,
+  organizations,
+  accounts,
+  expected_return,
+  is_new_buy_point
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) RETURNING *;
 
--- name: CreateAsset :one
-INSERT INTO hamonix_business.assets (
-  portfolio_id,
-  ticker_id,
-  price,
-  allocation
-) VALUES (
-  $1, $2, $3, $4
-) RETURNING *;
+-- name: GetListProfileIdByUserId :many
+SELECT id FROM harmonix_business.portfolio_profiles
+WHERE author_id = $1
+ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3;
 
--- name: CreatePCategory :one
-INSERT INTO hamonix_business.p_categories (
-  portfolio_id,
-  category_id
-) VALUES (
-  $1, $2
-) RETURNING *;
+-- name: GetListAdvisorsBranchesOrganizationsByProfileId :many
+SELECT advisors, branches, organizations, accounts
+FROM harmonix_business.portfolio_profiles
+WHERE id = $1 LIMIT 1;
 
--- name: CreatePBranch :one
-INSERT INTO hamonix_business.p_branches (
-  portfolio_id,
-  branch_id
-) VALUES (
-  $1, $2
-) RETURNING *;
+-- name: GetProfileInfoById :one
+SELECT * FROM harmonix_business.portfolio_profiles
+WHERE id = $1 LIMIT 1;
 
--- name: CreatePAdvisor :one
-INSERT INTO hamonix_business.p_advisors (
-  portfolio_id,
-  advisor_id
-) VALUES (
-  $1, $2
-) RETURNING *;
+-- name: GetPrivacyProfileById :one
+SELECT privacy FROM harmonix_business.portfolio_profiles
+WHERE id = $1 LIMIT 1;
 
--- name: CreatePOrganization :one
-INSERT INTO hamonix_business.p_organizations (
-  portfolio_id,
-  organization_id
-) VALUES (
-  $1, $2
-) RETURNING *;
-
--- name: UpdatePortfolio :one
-UPDATE hamonix_business.portfolios
+-- name: UpdateNamePortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
   name = $2,
-  privacy = $3
+  updated_at = $3
 WHERE id = $1
 RETURNING *;
 
--- name: UpdateAsset :one
-UPDATE hamonix_business.assets
+-- name: UpdatePrivacyPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
-  price = $3,
-  allocation = $4
-WHERE portfolio_id = $1 AND ticker_id = $2
+  privacy = $2,
+  updated_at = $3
+WHERE id = $1
 RETURNING *;
 
--- name: UpdatePCategory :one
-UPDATE hamonix_business.p_categories
+-- name: UpdateAdvisorsPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
-  category_id = $3
-WHERE portfolio_id = $1 AND category_id = $2
+  advisors = $2
+WHERE id = $1
 RETURNING *;
 
--- name: UpdatePBranch :one
-UPDATE hamonix_business.p_branches
+-- name: UpdateBranchesPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
-  branch_id = $3
-WHERE portfolio_id = $1 AND branch_id = $2
+  branches = $2
+WHERE id = $1
 RETURNING *;
 
--- name: UpdatePAdvisor :one
-UPDATE hamonix_business.p_advisors
+-- name: UpdateOrganizationsPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
-  advisor_id = $3
-WHERE portfolio_id = $1 AND advisor_id = $2
+  organizations = $2
+WHERE id = $1
 RETURNING *;
 
--- name: UpdatePOrganization :one
-UPDATE hamonix_business.p_organizations
+-- name: UpdateAccountsPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
 SET
-  organization_id = $3
-WHERE portfolio_id = $1 AND organization_id = $2
+  accounts = $2
+WHERE id = $1
 RETURNING *;
 
--- name: DeletePortfolio :exec
-DELETE FROM hamonix_business.portfolios
+-- name: UpdateExpectedReturnPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  expected_return = $2
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateIsNewBuyPointPortfolioProfile :one
+UPDATE harmonix_business.portfolio_profiles
+SET
+  is_new_buy_point = $2
+WHERE id = $1
+RETURNING *;
+
+-- name: DeletePortfolioProfile :exec
+DELETE FROM harmonix_business.portfolio_profiles
 WHERE id = $1;
 
--- name: DeleteAsset :exec
-DELETE FROM hamonix_business.assets
-WHERE portfolio_id = $1 AND ticker_id = $2;
+-- name: CheckIdExitsPortfolioProfile :one
+SELECT EXISTS (
+  SELECT 1
+  FROM harmonix_business.portfolio_profiles
+  WHERE id = $1
+);
 
--- name: DeletePCategory :exec
-DELETE FROM hamonix_business.p_categories
-WHERE portfolio_id = $1 AND category_id = $2;
-
--- name: DeletePBranch :exec
-DELETE FROM hamonix_business.p_branches
-WHERE portfolio_id = $1 AND branch_id = $2;
-
--- name: DeletePAdvisor :exec
-DELETE FROM hamonix_business.p_advisors
-WHERE portfolio_id = $1 AND advisor_id = $2;
-
--- name: DeletePOrganization :exec
-DELETE FROM hamonix_business.p_organizations
-WHERE portfolio_id = $1 AND organization_id = $2;
-
--- name: GetAssetsByPortfolioId :many
-SELECT * FROM hamonix_business.assets
-WHERE portfolio_id = $1;
-
--- name: GetPCategoryByPortfolioId :many
-SELECT * FROM hamonix_business.p_categories
-WHERE portfolio_id = $1;
-
--- name: GetListCategoryPCategoryByPortfolioId :many
-SELECT category_id FROM hamonix_business.p_categories
-WHERE portfolio_id = $1;
-
--- name: GetPBranchByPortfolioId :many
-SELECT * FROM hamonix_business.p_branches
-WHERE portfolio_id = $1;
-
--- name: GetListBranchPBranchByPortfolioId :many
-SELECT branch_id FROM hamonix_business.p_branches
-WHERE portfolio_id = $1;
-
--- name: GetPOrganizationByPortfolioId :many
-SELECT * FROM hamonix_business.p_organizations
-WHERE portfolio_id = $1;
-
--- name: GetListOrganizationPOrganizationByPortfolioId :many
-SELECT organization_id FROM hamonix_business.p_organizations
-WHERE portfolio_id = $1;
-
--- name: GetPAdvisorByPortfolioId :many
-SELECT * FROM hamonix_business.p_advisors
-WHERE portfolio_id = $1;
-
--- name: GetListAdvisorPAdvisorsByPortfolioId :many
-SELECT advisor_id FROM hamonix_business.p_advisors
-WHERE portfolio_id = $1;
-
--- name: GetProfilesByPortfolioId :one
-SELECT * FROM hamonix_business.portfolios
-WHERE id = $1 LIMIT 1;
+-- name: CountProfilesInUserPortfolioProfile :one
+SELECT COUNT(id)
+FROM harmonix_business.portfolio_profiles
+WHERE author_id = $1;

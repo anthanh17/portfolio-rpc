@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+        "name": "Andrew - Golang debug",
+        "type": "go",
+        "request": "launch",
+        "mode": "auto",
+        "program": "${workspaceFolder}",
+        "args": ["-f", "./etc/rdportfoliorpc.yaml"]
+        }
+    ]
+}

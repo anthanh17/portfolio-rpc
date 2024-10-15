@@ -1,10 +1,23 @@
 database:
   host: localhost
   port: 5432
-  username: root
-  password: secret
-  database: hehe_business
+  username: postgres
+  password: Uqg85gpHne
+  database: postgres
+mongo:
+  url: mongodb://root:abcv123553@localhost:27017
+  database: db_test
+  collection: test
+cache:
+  type: redis
+  host: localhost
+  port: 6379
+  username:
+  password: 123456788
+  db: 0
 grpc:
-  address: 0.0.0.0:9000
+  address: 0.0.0.0:8080
 log:
   level: info
+encrypt:
+  key: xxxxxxxxxxxxxxxxxxxx # *multiple of 16 bytes

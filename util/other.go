@@ -46,3 +46,12 @@ func Paginate[T any](data []T, page, pageSize int) []T {
 	// Return results
 	return data[startIndex:endIndex]
 }
+
+// Convert []string to []interface{}
+func ConvertSliceStringToSliceInterface(listDataString []string) []interface{} {
+	listDataInterface := make([]interface{}, len(listDataString))
+	for i, v := range listDataString {
+		listDataInterface[i] = v
+	}
+	return listDataInterface
+}
